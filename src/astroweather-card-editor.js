@@ -43,9 +43,9 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.name || "";
   }
 
-  get _icons() {
-    return this._config.icons || "";
-  }
+  // get _icons() {
+  //   return this._config.icons || "";
+  // }
 
   get _current() {
     return this._config.current !== false;
@@ -55,17 +55,21 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.details !== false;
   }
 
+  get _deepskydetails() {
+    return this._config.deepskydetails !== false;
+  }
+
   get _forecast() {
     return this._config.forecast !== false;
   }
 
-  get _hourly_forecast() {
-    return this._config.hourly_forecast !== false;
-  }
+  // get _hourly_forecast() {
+  //   return this._config.hourly_forecast !== false;
+  // }
 
-  get _number_of_forecasts() {
-    return this._config.number_of_forecasts || 5;
-  }
+  // get _number_of_forecasts() {
+  //   return this._config.number_of_forecasts || 5;
+  // }
 
   firstUpdated() {
     HELPERS.then((help) => {
@@ -93,12 +97,12 @@ export class AstroWeatherCardEditor extends LitElement {
             .configValue="${"name"}"
             @value-changed="${this._valueChanged}"
           ></paper-input>
-          <paper-input
+          <!-- <paper-input
             label="Icons location"
             .value="${this._icons}"
             .configValue="${"icons"}"
             @value-changed="${this._valueChanged}"
-          ></paper-input>
+          ></paper-input> -->
           ${customElements.get("ha-entity-picker")
             ? html`
                 <ha-entity-picker
@@ -145,20 +149,28 @@ export class AstroWeatherCardEditor extends LitElement {
             </div>
             <div class="switch">
               <ha-switch
+                .checked=${this._deepskydetails}
+                .configValue="${"deepskydetails"}"
+                @change="${this._valueChanged}"
+              ></ha-switch
+              ><span>Show deepsky details</span>
+            </div>
+            <div class="switch">
+              <ha-switch
                 .checked=${this._forecast}
                 .configValue="${"forecast"}"
                 @change="${this._valueChanged}"
               ></ha-switch
               ><span>Show forecast</span>
             </div>
-            <div class="switch">
+            <!-- <div class="switch">
               <ha-switch
                 .checked=${this._hourly_forecast}
                 .configValue="${"hourly_forecast"}"
                 @change="${this._valueChanged}"
               ></ha-switch
               ><span>Show hourly forecast</span>
-            </div>
+            </div> -->
           </div>
           <paper-input
             label="Number of future forcasts"
