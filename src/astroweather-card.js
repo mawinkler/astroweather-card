@@ -4,53 +4,53 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
-const weatherIconsDay = {
-  clear: "day",
-  "clear-night": "night",
-  cloudy: "cloudy",
-  fog: "cloudy",
-  hail: "rainy-7",
-  lightning: "thunder",
-  "lightning-rainy": "thunder",
-  partlycloudy: "cloudy-day-3",
-  pouring: "rainy-6",
-  rainy: "rainy-5",
-  snowy: "snowy-6",
-  "snowy-rainy": "rainy-7",
-  sunny: "day",
-  windy: "cloudy",
-  "windy-variant": "cloudy-day-3",
-  exceptional: "!!",
-  undefined: "day",
-};
+// const weatherIconsDay = {
+//   clear: "day",
+//   "clear-night": "night",
+//   cloudy: "cloudy",
+//   fog: "cloudy",
+//   hail: "rainy-7",
+//   lightning: "thunder",
+//   "lightning-rainy": "thunder",
+//   partlycloudy: "cloudy-day-3",
+//   pouring: "rainy-6",
+//   rainy: "rainy-5",
+//   snowy: "snowy-6",
+//   "snowy-rainy": "rainy-7",
+//   sunny: "day",
+//   windy: "cloudy",
+//   "windy-variant": "cloudy-day-3",
+//   exceptional: "!!",
+//   undefined: "day",
+// };
 
-const weatherIconsNight = {
-  ...weatherIconsDay,
-  clear: "night",
-  sunny: "night",
-  partlycloudy: "cloudy-night-3",
-  "windy-variant": "cloudy-night-3",
-};
+// const weatherIconsNight = {
+//   ...weatherIconsDay,
+//   clear: "night",
+//   sunny: "night",
+//   partlycloudy: "cloudy-night-3",
+//   "windy-variant": "cloudy-night-3",
+// };
 
-const windDirections = [
-  "N",
-  "NNE",
-  "NE",
-  "ENE",
-  "E",
-  "ESE",
-  "SE",
-  "SSE",
-  "S",
-  "SSW",
-  "SW",
-  "WSW",
-  "W",
-  "WNW",
-  "NW",
-  "NNW",
-  "N",
-];
+// const windDirections = [
+//   "N",
+//   "NNE",
+//   "NE",
+//   "ENE",
+//   "E",
+//   "ESE",
+//   "SE",
+//   "SSE",
+//   "S",
+//   "SSW",
+//   "SW",
+//   "WSW",
+//   "W",
+//   "WNW",
+//   "NW",
+//   "NNW",
+//   "N",
+// ];
 
 window.customCards = window.customCards || [];
 window.customCards.push({
@@ -166,6 +166,25 @@ class AstroWeatherCard extends LitElement {
     `;
   }
 
+  renderCurrent(stateObj) {
+    this.numberElements++;
+
+    return html`
+      <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
+        <ha-icon icon="mdi:weather-night"></ha-icon>
+        ${this._config.name
+          ? html` <span class="title"> ${this._config.name} </span> `
+          : ""}
+        <span class="temp"
+          >${this.getUnit("temperature") == "°F"
+            ? Math.round(stateObj.attributes.temperature)
+            : stateObj.attributes.temperature}</span
+        >
+        <span class="tempc"> ${this.getUnit("temperature")}</span>
+      </div>
+    `;
+  }
+
   renderDeepSkyForecast(stateObj) {
     this.numberElements++;
 
@@ -199,51 +218,33 @@ class AstroWeatherCard extends LitElement {
     `;
   }
 
-  renderCurrent(stateObj) {
-    this.numberElements++;
-
-    return html`
-      <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
-        <ha-icon icon="mdi:weather-night"></ha-icon>
-        ${this._config.name
-          ? html` <span class="title"> ${this._config.name} </span> `
-          : ""}
-        <span class="temp"
-          >${this.getUnit("temperature") == "°F"
-            ? Math.round(stateObj.attributes.temperature)
-            : stateObj.attributes.temperature}</span
-        >
-        <span class="tempc"> ${this.getUnit("temperature")}</span>
-      </div>
-    `;
-  }
-
   renderDetails(stateObj, lang) {
     const sun = this.hass.states["sun.sun"];
     let next_rising;
     let next_setting;
 
-    if (sun) {
-      next_rising = new Date(sun.attributes.next_rising).toLocaleTimeString(
-        lang,
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        }
-      );
-      next_setting = new Date(sun.attributes.next_setting).toLocaleTimeString(
-        lang,
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-        }
-      );
-    }
+    next_rising = new Date(
+      stateObj.attributes.sun_next_rising_astro
+    ).toLocaleTimeString(lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    next_setting = new Date(
+      stateObj.attributes.sun_next_setting_astro
+    ).toLocaleTimeString(lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     this.numberElements++;
 
     return html`
       <ul class="variations ${this.numberElements > 1 ? "spacer" : ""}">
+        <li>
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
+          ${stateObj.attributes.timestamp}<span class="unit"> </span>
+        </li>
+        <li></li>
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
           View Condition ${stateObj.attributes.condition}<span class="unit">
@@ -574,4 +575,5 @@ class AstroWeatherCard extends LitElement {
     `;
   }
 }
+
 customElements.define("astroweather-card", AstroWeatherCard);
