@@ -4,54 +4,6 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
-// const weatherIconsDay = {
-//   clear: "day",
-//   "clear-night": "night",
-//   cloudy: "cloudy",
-//   fog: "cloudy",
-//   hail: "rainy-7",
-//   lightning: "thunder",
-//   "lightning-rainy": "thunder",
-//   partlycloudy: "cloudy-day-3",
-//   pouring: "rainy-6",
-//   rainy: "rainy-5",
-//   snowy: "snowy-6",
-//   "snowy-rainy": "rainy-7",
-//   sunny: "day",
-//   windy: "cloudy",
-//   "windy-variant": "cloudy-day-3",
-//   exceptional: "!!",
-//   undefined: "day",
-// };
-
-// const weatherIconsNight = {
-//   ...weatherIconsDay,
-//   clear: "night",
-//   sunny: "night",
-//   partlycloudy: "cloudy-night-3",
-//   "windy-variant": "cloudy-night-3",
-// };
-
-// const windDirections = [
-//   "N",
-//   "NNE",
-//   "NE",
-//   "ENE",
-//   "E",
-//   "ESE",
-//   "SE",
-//   "SSE",
-//   "S",
-//   "SSW",
-//   "SW",
-//   "WSW",
-//   "W",
-//   "WNW",
-//   "NW",
-//   "NNW",
-//   "N",
-// ];
-
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "astroweather-card",
@@ -171,50 +123,11 @@ class AstroWeatherCard extends LitElement {
 
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
-        <ha-icon icon="mdi:weather-night"></ha-icon>
         ${this._config.name
           ? html` <span class="title"> ${this._config.name} </span> `
           : ""}
-        <span class="temp"
-          >${this.getUnit("temperature") == "°F"
-            ? Math.round(stateObj.attributes.temperature)
-            : stateObj.attributes.temperature}</span
-        >
-        <span class="tempc"> ${this.getUnit("temperature")}</span>
+        <span class="condition">${stateObj.attributes.condition} %</span>
       </div>
-    `;
-  }
-
-  renderDeepSkyForecast(stateObj) {
-    this.numberElements++;
-
-    return html`
-      <ul class="deepskyforecast ${this.numberElements > 1 ? "spacer" : ""}">
-        <li>
-          <ha-icon icon="mdi:weather-night"></ha-icon>
-          Today: ${stateObj.attributes.deepsky_forecast_today}<span
-            class="unit"
-          >
-          </span>
-        </li>
-        <li>
-          ${stateObj.attributes.deepsky_forecast_today_desc}<span class="unit">
-          </span>
-        </li>
-        <li>
-          <ha-icon icon="mdi:weather-night"></ha-icon>
-          Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow}<span
-            class="unit"
-          >
-          </span>
-        </li>
-        <li>
-          ${stateObj.attributes.deepsky_forecast_tomorrow_desc}<span
-            class="unit"
-          >
-          </span>
-        </li>
-      </ul>
     `;
   }
 
@@ -222,6 +135,7 @@ class AstroWeatherCard extends LitElement {
     const sun = this.hass.states["sun.sun"];
     let next_rising;
     let next_setting;
+    let data_timestamp;
 
     next_rising = new Date(
       stateObj.attributes.sun_next_rising_astro
@@ -235,16 +149,36 @@ class AstroWeatherCard extends LitElement {
       hour: "2-digit",
       minute: "2-digit",
     });
+    data_timestamp = new Date(stateObj.attributes.timestamp).toLocaleTimeString(
+      lang,
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
 
     this.numberElements++;
 
     return html`
       <ul class="variations ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
-          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          ${stateObj.attributes.timestamp}<span class="unit"> </span>
+          <ha-icon icon="mdi:clock-outline"></ha-icon>
+          Data timestamp ${data_timestamp}<span class="unit"> </span>
         </li>
-        <li></li>
+        <li>
+          ${stateObj.attributes.prec_type == "Snow"
+            ? html` <ha-icon icon="mdi:weather-snowy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Rain"
+            ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Frzr"
+            ? html` <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Icep"
+            ? html` <ha-icon icon="mdi:weather-hail"></ha-icon> `
+            : stateObj.attributes.prec_type == "None"
+            ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
+            : ""}
+          ${stateObj.attributes.prec_type}
+        </li>
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
           View Condition ${stateObj.attributes.condition}<span class="unit">
@@ -253,7 +187,7 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
-          Cloudcover ${stateObj.attributes.cloudcover}<span class="unit">
+          Cloud Cover ${stateObj.attributes.cloudcover}<span class="unit">
             %
           </span>
         </li>
@@ -271,7 +205,7 @@ class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-                ${next_rising}
+                Next Rising ${next_rising}
               </li>
             `
           : ""}
@@ -279,10 +213,30 @@ class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-                ${next_setting}
+                Next Setting ${next_setting}
               </li>
             `
           : ""}
+      </ul>
+    `;
+  }
+
+  renderDeepSkyForecast(stateObj) {
+    this.numberElements++;
+
+    return html`
+      <ul class="deepskyforecast ${this.numberElements > 1 ? "spacer" : ""}">
+        <li>
+          <ha-icon icon="mdi:weather-night"></ha-icon>
+          Today: ${stateObj.attributes.deepsky_forecast_today}
+        </li>
+        <li>${stateObj.attributes.deepsky_forecast_today_desc}</li>
+
+        <li>
+          <ha-icon icon="mdi:weather-night"></ha-icon>
+          Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow}
+        </li>
+        <li>${stateObj.attributes.deepsky_forecast_tomorrow_desc}</li>
       </ul>
     `;
   }
@@ -327,7 +281,7 @@ class AstroWeatherCard extends LitElement {
                   <div class="value_item">${daily.transparency} %</div>
                   <div class="value_item">${daily.condition} %</div>
                   <div class="value_item">
-                    ${daily.temperature}${this.getUnit("temperature")}
+                    ${daily.temperature} ${this.getUnit("temperature")}
                   </div>
                 </div>
               </div>
@@ -337,32 +291,8 @@ class AstroWeatherCard extends LitElement {
     `;
   }
 
-  // getWeatherIcon(condition, sun) {
-  //   return `${
-  //     this._config.icons
-  //       ? this._config.icons
-  //       : "https://cdn.jsdelivr.net/gh/bramkragten/astroweather-card/dist/icons/"
-  //   }${
-  //     sun && sun.state == "below_horizon"
-  //       ? weatherIconsNight[condition]
-  //       : weatherIconsDay[condition]
-  //   }.svg`;
-  // }
-
   getUnit(measure) {
-    const lengthUnit = this.hass.config.unit_system.length;
-    switch (measure) {
-      case "air_pressure":
-        return lengthUnit === "km" ? "hPa" : "inHg";
-      case "length":
-        return lengthUnit;
-      case "precipitation":
-        return lengthUnit === "km" ? "mm" : "in";
-      case "precipitation_probability":
-        return "%";
-      default:
-        return this.hass.config.unit_system[measure] || "";
-    }
+    return this.hass.config.unit_system[measure] || "";
   }
 
   _handleClick() {
@@ -396,42 +326,16 @@ class AstroWeatherCard extends LitElement {
 
       .title {
         position: absolute;
-        left: 3em;
-        font-weight: 300;
-        font-size: 3em;
+        font-weight: 400;
+        font-size: 2em;
         color: var(--primary-text-color);
       }
 
-      .temp {
-        font-weight: 300;
-        font-size: 4em;
+      .condition {
+        font-size: 2em;
         color: var(--primary-text-color);
         position: absolute;
         right: 1em;
-      }
-
-      .tempc {
-        font-weight: 300;
-        font-size: 1.5em;
-        vertical-align: super;
-        color: var(--primary-text-color);
-        position: absolute;
-        right: 1em;
-        margin-top: -14px;
-        margin-right: 7px;
-      }
-
-      @media (max-width: 460px) {
-        .title {
-          font-size: 2.2em;
-          left: 4em;
-        }
-        .temp {
-          font-size: 3em;
-        }
-        .tempc {
-          font-size: 1em;
-        }
       }
 
       .current {
@@ -452,12 +356,6 @@ class AstroWeatherCard extends LitElement {
 
       .variations ha-icon {
         height: 22px;
-        margin-right: 5px;
-        color: var(--paper-item-icon-color);
-      }
-
-      .variations ha-icon-big {
-        height: 48px;
         margin-right: 5px;
         color: var(--paper-item-icon-color);
       }
@@ -539,38 +437,6 @@ class AstroWeatherCard extends LitElement {
       .label {
         font-weight: bold;
         text-align: center;
-      }
-
-      .icon.bigger {
-        width: 10em;
-        height: 10em;
-        margin-top: -4em;
-        position: absolute;
-        left: 0em;
-      }
-
-      .icon {
-        width: 50px;
-        height: 50px;
-        margin-right: 5px;
-        display: inline-block;
-        vertical-align: middle;
-        background-size: contain;
-        background-position: center center;
-        background-repeat: no-repeat;
-        text-indent: -9999px;
-      }
-
-      .weather {
-        font-weight: 300;
-        font-size: 1.5em;
-        color: var(--primary-text-color);
-        text-align: left;
-        position: absolute;
-        top: -0.5em;
-        left: 6em;
-        word-wrap: break-word;
-        width: 30%;
       }
     `;
   }
