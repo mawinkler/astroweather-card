@@ -126,7 +126,11 @@ class AstroWeatherCard extends LitElement {
         ${this._config.name
           ? html` <span class="title"> ${this._config.name} </span> `
           : ""}
-        <span class="condition">${stateObj.attributes.condition} %</span>
+
+        <span class="condition"
+          ><span class="conditiondesc">View Condition </span>${stateObj
+            .attributes.condition_plain}</span
+        >
       </div>
     `;
   }
@@ -160,7 +164,7 @@ class AstroWeatherCard extends LitElement {
     this.numberElements++;
 
     return html`
-      <ul class="variations ${this.numberElements > 1 ? "spacer" : ""}">
+      <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:clock-outline"></ha-icon>
           Data timestamp ${data_timestamp}<span class="unit"> </span>
@@ -225,18 +229,26 @@ class AstroWeatherCard extends LitElement {
     this.numberElements++;
 
     return html`
-      <ul class="deepskyforecast ${this.numberElements > 1 ? "spacer" : ""}">
+      <ul
+        class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
+      >
         <li>
           <ha-icon icon="mdi:weather-night"></ha-icon>
           Today: ${stateObj.attributes.deepsky_forecast_today}
         </li>
-        <li>${stateObj.attributes.deepsky_forecast_today_desc}</li>
+        <li>
+          <ha-icon icon="mdi:image-text"></ha-icon>
+          Desc: ${stateObj.attributes.deepsky_forecast_today_desc}
+        </li>
 
         <li>
           <ha-icon icon="mdi:weather-night"></ha-icon>
           Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow}
         </li>
-        <li>${stateObj.attributes.deepsky_forecast_tomorrow_desc}</li>
+        <li>
+          <ha-icon icon="mdi:image-text"></ha-icon>
+          Desc: ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+        </li>
       </ul>
     `;
   }
@@ -249,7 +261,7 @@ class AstroWeatherCard extends LitElement {
     this.numberElements++;
     return html`
       <div class="forecast clear ${this.numberElements > 1 ? "spacer" : ""}">
-        <div class="day">
+        <div class="forecastrow">
           <div class="label">Time</div>
           <div class="label">Clouds</div>
           <div class="label">Seeing</div>
@@ -266,8 +278,8 @@ class AstroWeatherCard extends LitElement {
           )
           .map(
             (daily) => html`
-              <div class="day">
-                <div class="dayname">
+              <div class="forecastrow">
+                <div class="forecastrowname">
                   ${this._config.hourly_forecast
                     ? new Date(daily.datetime).toLocaleTimeString(lang, {
                         hour: "2-digit",
@@ -338,12 +350,17 @@ class AstroWeatherCard extends LitElement {
         right: 1em;
       }
 
+      .conditiondesc {
+        font-size: 1.2rem;
+        color: var(--primary-text-color);
+      }
+
       .current {
         padding: 1.2em 0;
         margin-bottom: 3.5em;
       }
 
-      .variations {
+      .details {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-between;
@@ -354,22 +371,22 @@ class AstroWeatherCard extends LitElement {
         margin: 0;
       }
 
-      .variations ha-icon {
+      .details ha-icon {
         height: 22px;
         margin-right: 5px;
         color: var(--paper-item-icon-color);
       }
 
-      .variations li {
+      .details li {
         flex-basis: auto;
         width: 50%;
       }
 
-      .variations li:nth-child(2n) {
+      .details li:nth-child(2n) {
         text-align: right;
       }
 
-      .variations li:nth-child(2n) ha-icon {
+      .details li:nth-child(2n) ha-icon {
         margin-right: 0;
         margin-left: 8px;
         float: right;
@@ -383,7 +400,7 @@ class AstroWeatherCard extends LitElement {
         color: var(--primary-text-color);
         list-style: none;
         padding: 0 1em;
-        margin: 0;
+        margin-top: 1;
       }
 
       .deepskyforecast ha-icon {
@@ -394,7 +411,7 @@ class AstroWeatherCard extends LitElement {
 
       .deepskyforecast li {
         flex-basis: auto;
-        width: 50%;
+        width: 100%;
       }
 
       .unit {
@@ -407,7 +424,7 @@ class AstroWeatherCard extends LitElement {
         display: flex;
       }
 
-      .day {
+      .forecastrow {
         flex: 1;
         display: block;
         text-align: center;
@@ -417,15 +434,15 @@ class AstroWeatherCard extends LitElement {
         box-sizing: border-box;
       }
 
-      .dayname {
+      .forecastrowname {
         text-transform: uppercase;
       }
 
-      .forecast .day:first-child {
+      .forecast .forecastrow:first-child {
         margin-left: 0;
       }
 
-      .forecast .day:nth-last-child(1) {
+      .forecast .forecastrow:nth-last-child(1) {
         border-right: none;
         margin-right: 0;
       }
