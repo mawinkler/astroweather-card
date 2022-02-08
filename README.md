@@ -4,7 +4,7 @@ This is a custom weather card for my custom [Home Assistant](https://www.home-as
 
 <img src="./images/astroweather-card.png" alt="AstroWeather Card" width="400"/>
 
-The percentages calculated for the clouds, seeing and transparency are to be read like 100% is perfect, 0% is bad. This also means, that a percentage of e.g. 87% for cloud does stand for a sky being nearly cloud free ;-).
+The percentages that are calculated for the clouds, seeing and transparency are to be read like 100% is perfect, 0% is bad. This also means, that a percentage of e.g. 87% for cloud does stand for a sky being nearly cloud free ;-).
 
 Thanks for all picking this card up.
 
