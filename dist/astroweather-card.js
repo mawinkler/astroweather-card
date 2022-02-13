@@ -66,7 +66,7 @@ class AstroWeatherCard extends LitElement {
 
   setConfig(config) {
     if (!config.entity) {
-      throw new Error("Please define a weather entity");
+      throw new Error("Please define an AstroWeather entity");
     }
     this._config = config;
   }
@@ -101,6 +101,26 @@ class AstroWeatherCard extends LitElement {
         </ha-card>
       `;
     }
+    if (!stateObj.attributes.cloudcover) {
+      return html`
+        <style>
+          .not-found {
+            flex: 1;
+            background-color: yellow;
+            padding: 8px;
+          }
+        </style>
+        <ha-card>
+          <div class="not-found">
+            Entity is not an AstroWeather entity: ${this._config.entity}
+          </div>
+        </ha-card>
+      `;
+    }
+
+    // Cloud Cover ${stateObj.attributes.cloudcover}<span class="unit">
+    // Seeing ${stateObj.attributes.seeing}<span class="unit">
+    // Transparency ${stateObj.attributes.transparency}<span class="unit">
 
     return html`
       <ha-card @click="${this._handleClick}">
@@ -127,10 +147,7 @@ class AstroWeatherCard extends LitElement {
           ? html` <span class="title"> ${this._config.name} </span> `
           : ""}
 
-        <span class="condition"
-          ><span class="conditiondesc">View Condition </span>${stateObj
-            .attributes.condition_plain}</span
-        >
+        <span class="condition"> ${stateObj.attributes.condition_plain}</span>
       </div>
     `;
   }
@@ -146,18 +163,21 @@ class AstroWeatherCard extends LitElement {
     ).toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: false,
     });
     next_setting = new Date(
       stateObj.attributes.sun_next_setting_astro
     ).toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
+      hour12: false,
     });
     data_timestamp = new Date(stateObj.attributes.timestamp).toLocaleTimeString(
       lang,
       {
         hour: "2-digit",
         minute: "2-digit",
+        hour12: false,
       }
     );
 
@@ -167,7 +187,7 @@ class AstroWeatherCard extends LitElement {
       <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:clock-outline"></ha-icon>
-          Data timestamp ${data_timestamp}<span class="unit"> </span>
+          Timestamp ${data_timestamp}<span class="unit"> </span>
         </li>
         <li>
           ${stateObj.attributes.prec_type == "Snow"
@@ -185,7 +205,7 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          View Condition ${stateObj.attributes.condition}<span class="unit">
+          Condition ${stateObj.attributes.condition}<span class="unit">
             %
           </span>
         </li>
@@ -238,7 +258,7 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:image-text"></ha-icon>
-          Desc: ${stateObj.attributes.deepsky_forecast_today_desc}
+          ${stateObj.attributes.deepsky_forecast_today_desc}
         </li>
 
         <li>
@@ -247,7 +267,7 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:image-text"></ha-icon>
-          Desc: ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+          ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
         </li>
       </ul>
     `;
@@ -284,6 +304,7 @@ class AstroWeatherCard extends LitElement {
                     ? new Date(daily.datetime).toLocaleTimeString(lang, {
                         hour: "2-digit",
                         minute: "2-digit",
+                        hour12: false,
                       })
                     : new Date(daily.datetime).toLocaleDateString(lang, {
                         weekday: "short",
@@ -344,7 +365,7 @@ class AstroWeatherCard extends LitElement {
       }
 
       .condition {
-        font-size: 2em;
+        font-size: 1.2rem;
         color: var(--primary-text-color);
         position: absolute;
         right: 1em;

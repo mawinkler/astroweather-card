@@ -43,10 +43,6 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.name || "";
   }
 
-  // get _icons() {
-  //   return this._config.icons || "";
-  // }
-
   get _current() {
     return this._config.current !== false;
   }
@@ -63,13 +59,14 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.forecast !== false;
   }
 
-  // get _hourly_forecast() {
-  //   return this._config.hourly_forecast !== false;
-  // }
+  get _hourly_forecast() {
+    return true;
+    // return this._config.hourly_forecast !== false;
+  }
 
-  // get _number_of_forecasts() {
-  //   return this._config.number_of_forecasts || 5;
-  // }
+  get _number_of_forecasts() {
+    return this._config.number_of_forecasts || 5;
+  }
 
   firstUpdated() {
     HELPERS.then((help) => {
