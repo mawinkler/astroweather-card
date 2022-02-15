@@ -101,7 +101,7 @@ class AstroWeatherCard extends LitElement {
         </ha-card>
       `;
     }
-    if (!stateObj.attributes.cloudcover) {
+    if (!stateObj.attributes.condition_percentage) {
       return html`
         <style>
           .not-found {
@@ -187,7 +187,7 @@ class AstroWeatherCard extends LitElement {
       <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:clock-outline"></ha-icon>
-          Timestamp ${data_timestamp}<span class="unit"> </span>
+          Timestamp ${data_timestamp}
         </li>
         <li>
           ${stateObj.attributes.prec_type == "Snow"
@@ -205,42 +205,42 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          Condition ${stateObj.attributes.condition}<span class="unit">
+          Condition ${stateObj.attributes.condition_percentage}<span
+            class="unit"
+          >
             %
           </span>
         </li>
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
-          Cloud Cover ${stateObj.attributes.cloudcover}<span class="unit">
+          Cloud Cover ${stateObj.attributes.cloudcover_percentage}<span
+            class="unit"
+          >
             %
           </span>
         </li>
         <li>
           <ha-icon icon="mdi:waves"></ha-icon>
-          Seeing ${stateObj.attributes.seeing}<span class="unit"> % </span>
-        </li>
-        <li>
-          <ha-icon icon="mdi:safety-goggles"></ha-icon>
-          Transparency ${stateObj.attributes.transparency}<span class="unit">
+          Seeing ${stateObj.attributes.seeing_percentage}<span class="unit">
             %
           </span>
         </li>
-        ${next_rising
-          ? html`
-              <li>
-                <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-                Next Rising ${next_rising}
-              </li>
-            `
-          : ""}
-        ${next_setting
-          ? html`
-              <li>
-                <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-                Next Setting ${next_setting}
-              </li>
-            `
-          : ""}
+        <li>
+          <ha-icon icon="mdi:safety-goggles"></ha-icon>
+          Transparency ${stateObj.attributes.transparency_percentage}<span
+            class="unit"
+          >
+            %
+          </span>
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Next Rising ${next_rising}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Next Setting ${next_setting}
+        </li>
       </ul>
     `;
   }
@@ -254,7 +254,7 @@ class AstroWeatherCard extends LitElement {
       >
         <li>
           <ha-icon icon="mdi:weather-night"></ha-icon>
-          Today: ${stateObj.attributes.deepsky_forecast_today}
+          Today: ${stateObj.attributes.deepsky_forecast_today_plain}
         </li>
         <li>
           <ha-icon icon="mdi:image-text"></ha-icon>
@@ -263,7 +263,7 @@ class AstroWeatherCard extends LitElement {
 
         <li>
           <ha-icon icon="mdi:weather-night"></ha-icon>
-          Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow}
+          Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
         </li>
         <li>
           <ha-icon icon="mdi:image-text"></ha-icon>
@@ -283,10 +283,11 @@ class AstroWeatherCard extends LitElement {
       <div class="forecast clear ${this.numberElements > 1 ? "spacer" : ""}">
         <div class="forecastrow">
           <div class="label">Time</div>
+          <div class="label">Cond</div>
           <div class="label">Clouds</div>
           <div class="label">Seeing</div>
           <div class="label">Trans</div>
-          <div class="label">Cond</div>
+          <div class="label">LI</div>
           <div class="label">Temp</div>
         </div>
         ${forecast
@@ -309,10 +310,13 @@ class AstroWeatherCard extends LitElement {
                     : new Date(daily.datetime).toLocaleDateString(lang, {
                         weekday: "short",
                       })}
-                  <div class="value_item">${daily.cloudcover} %</div>
-                  <div class="value_item">${daily.seeing} %</div>
-                  <div class="value_item">${daily.transparency} %</div>
-                  <div class="value_item">${daily.condition} %</div>
+                  <div class="value_item_bold">${daily.condition} %</div>
+                  <div class="value_item">${daily.cloudcover_percentage} %</div>
+                  <div class="value_item">${daily.seeing_percentage} %</div>
+                  <div class="value_item">
+                    ${daily.transparency_percentage} %
+                  </div>
+                  <div class="value_item">${daily.lifted_index} °</div>
                   <div class="value_item">
                     ${daily.temperature} ${this.getUnit("temperature")}
                   </div>
@@ -469,6 +473,9 @@ class AstroWeatherCard extends LitElement {
       }
 
       .value_item {
+      }
+
+      .value_item_bold {
         font-weight: bold;
       }
 
