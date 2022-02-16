@@ -301,15 +301,11 @@ class AstroWeatherCard extends LitElement {
             (daily) => html`
               <div class="forecastrow">
                 <div class="forecastrowname">
-                  ${this._config.hourly_forecast
-                    ? new Date(daily.datetime).toLocaleTimeString(lang, {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      })
-                    : new Date(daily.datetime).toLocaleDateString(lang, {
-                        weekday: "short",
-                      })}
+                  ${new Date(daily.datetime).toLocaleTimeString(lang, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
                   <div class="value_item_bold">${daily.condition} %</div>
                   <div class="value_item">${daily.cloudcover_percentage} %</div>
                   <div class="value_item">${daily.seeing_percentage} %</div>
@@ -326,6 +322,15 @@ class AstroWeatherCard extends LitElement {
           )}
       </div>
     `;
+    // <!-- ${this._config.hourly_forecast
+    //   ? new Date(daily.datetime).toLocaleTimeString(lang, {
+    //       hour: "2-digit",
+    //       minute: "2-digit",
+    //       hour12: false,
+    //     })
+    //   : new Date(daily.datetime).toLocaleDateString(lang, {
+    //       weekday: "short",
+    //     })} -->
   }
 
   getUnit(measure) {
