@@ -154,19 +154,35 @@ class AstroWeatherCard extends LitElement {
 
   renderDetails(stateObj, lang) {
     const sun = this.hass.states["sun.sun"];
-    let next_rising;
-    let next_setting;
+    let sun_next_rising;
+    let sun_next_setting;
+    let moon_next_rising;
+    let moon_next_setting;
     let data_timestamp;
 
-    next_rising = new Date(
+    sun_next_rising = new Date(
       stateObj.attributes.sun_next_rising_astro
     ).toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    next_setting = new Date(
+    sun_next_setting = new Date(
       stateObj.attributes.sun_next_setting_astro
+    ).toLocaleTimeString(lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    moon_next_rising = new Date(
+      stateObj.attributes.moon_next_rising
+    ).toLocaleTimeString(lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    moon_next_setting = new Date(
+      stateObj.attributes.moon_next_setting
     ).toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
@@ -186,8 +202,54 @@ class AstroWeatherCard extends LitElement {
     return html`
       <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
-          <ha-icon icon="mdi:clock-outline"></ha-icon>
-          Timestamp ${data_timestamp}
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
+          <b
+            >Condition: ${stateObj.attributes.condition_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
+          <b
+            >Cloud Cover: ${stateObj.attributes.cloudcover_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:waves"></ha-icon>
+          <b
+            >Seeing: ${stateObj.attributes.seeing_percentage}<span class="unit">
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:safety-goggles"></ha-icon>
+          <b
+            >Transparency: ${stateObj.attributes.transparency_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:thermometer"></ha-icon>
+          Temperature: ${stateObj.attributes.temperature} °C
+        </li>
+        <li>
+          <ha-icon icon="mdi:water-percent"></ha-icon>
+          Humidity: ${stateObj.attributes.humidity} %
+        </li>
+        <li>
+          <ha-icon icon="mdi:windsock"></ha-icon>
+          Wind: ${stateObj.attributes.wind_speed}
         </li>
         <li>
           ${stateObj.attributes.prec_type == "Snow"
@@ -201,45 +263,23 @@ class AstroWeatherCard extends LitElement {
             : stateObj.attributes.prec_type == "None"
             ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
             : ""}
-          ${stateObj.attributes.prec_type}
-        </li>
-        <li>
-          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          Condition ${stateObj.attributes.condition_percentage}<span
-            class="unit"
-          >
-            %
-          </span>
-        </li>
-        <li>
-          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
-          Cloud Cover ${stateObj.attributes.cloudcover_percentage}<span
-            class="unit"
-          >
-            %
-          </span>
-        </li>
-        <li>
-          <ha-icon icon="mdi:waves"></ha-icon>
-          Seeing ${stateObj.attributes.seeing_percentage}<span class="unit">
-            %
-          </span>
-        </li>
-        <li>
-          <ha-icon icon="mdi:safety-goggles"></ha-icon>
-          Transparency ${stateObj.attributes.transparency_percentage}<span
-            class="unit"
-          >
-            %
-          </span>
+          Precipitation: ${stateObj.attributes.prec_type}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-          Next Rising ${next_rising}
+          Sun Rising: ${sun_next_rising}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-          Next Setting ${next_setting}
+          Sun Setting: ${sun_next_setting}
+        </li>
+        <li>
+          <ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>
+          Moon Rising: ${moon_next_rising}
+        </li>
+        <li>
+          <ha-icon icon="mdi:arrow-down-circle-outline"></ha-icon>
+          Moon Setting: ${moon_next_setting}
         </li>
       </ul>
     `;
