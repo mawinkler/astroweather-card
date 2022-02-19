@@ -249,7 +249,8 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:windsock"></ha-icon>
-          Wind: ${stateObj.attributes.wind_speed}
+          Wind: ${stateObj.attributes.wind_bearing}
+          ${stateObj.attributes.wind_speed} m/s
         </li>
         <li>
           ${stateObj.attributes.prec_type == "Snow"
