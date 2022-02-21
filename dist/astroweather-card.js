@@ -515,6 +515,7 @@ class AstroWeatherCard extends LitElement {
         ],
       },
       options: {
+        animation: false,
         maintainAspectRatio: false,
         layout: {
           padding: {
