@@ -4,6 +4,9 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
+import { Chart, registerables } from "https://unpkg.com/chart.js@3.7.1?module";
+Chart.register(...registerables);
+
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "astroweather-card",
@@ -48,6 +51,8 @@ class AstroWeatherCard extends LitElement {
     return {
       _config: {},
       hass: {},
+      forecastChart: { type: Object },
+      forecastItems: { type: Number },
     };
   }
 
@@ -71,8 +76,39 @@ class AstroWeatherCard extends LitElement {
     this._config = config;
   }
 
+  // set hass(hass) {
+  //   this.weather = this._config.entity in hass.states;
+  // }
+
   shouldUpdate(changedProps) {
     return hasConfigOrEntityChanged(this, changedProps);
+  }
+
+  firstUpdated() {
+    if (this._config.graph !== false) {
+      this.measureCard();
+      this.drawChart();
+    }
+  }
+
+  updated(changedProperties) {
+    if (this._config.graph !== false) {
+      if (changedProperties.has("config")) {
+        this.drawChart();
+      }
+      if (changedProperties.has("weather")) {
+        this.updateChart();
+      }
+    }
+  }
+
+  measureCard() {
+    // const card = this.shadowRoot.querySelector("ha-card");
+    // let fontSize = this.config.forecast.labels_font_size;
+    // if (!card) {
+    //   return;
+    // }
+    // this.forecastItems = Math.round(card.offsetWidth / (fontSize * 5.5));
   }
 
   render() {
@@ -133,6 +169,11 @@ class AstroWeatherCard extends LitElement {
           : ""}
         ${this._config.forecast !== false
           ? this.renderForecast(stateObj.attributes.forecast, lang)
+          : ""}
+        ${this._config.graph !== false
+          ? html`<div class="chart-container">
+              <canvas id="forecastChart"></canvas>
+            </div>`
           : ""}
       </ha-card>
     `;
@@ -372,6 +413,225 @@ class AstroWeatherCard extends LitElement {
     //   : new Date(daily.datetime).toLocaleDateString(lang, {
     //       weekday: "short",
     //     })} -->
+  }
+
+  drawChart({ config, language, forecastItems } = this) {
+    let weather;
+    weather = this.hass.states[this._config.entity];
+    if (!weather || !weather.attributes || !weather.attributes.forecast) {
+      return [];
+    }
+    if (this.forecastChart) {
+      this.forecastChart.destroy();
+    }
+    var forecast = weather.attributes.forecast.slice(
+      0,
+      this._config.number_of_forecasts ? this._config.number_of_forecasts : 5
+    );
+    // if ((new Date(forecast[1].datetime) - new Date(forecast[0].datetime)) < 864e5)
+    //   var mode = 'hourly';
+    // else
+    //   var mode = 'daily';
+    var mode = "hourly";
+    var i;
+    var dateTime = [];
+    var condition = [];
+    var clouds = [];
+    var seeing = [];
+    var transparency = [];
+    for (i = 0; i < forecast.length; i++) {
+      var d = forecast[i];
+      dateTime.push(d.datetime);
+      condition.push(d.condition);
+      clouds.push(d.cloudcover_percentage);
+      seeing.push(d.seeing_percentage);
+      transparency.push(d.transparency_percentage);
+    }
+    var style = getComputedStyle(document.body);
+    var backgroundColor = style.getPropertyValue("--card-background-color");
+    var textColor = style.getPropertyValue("--primary-text-color");
+    var condColor = style.getPropertyValue("--primary-text-color");
+    var attrColor = style.getPropertyValue("--paper-item-icon-color");
+    var dividerColor = style.getPropertyValue("--divider-color");
+    const ctx = this.renderRoot
+      .querySelector("#forecastChart")
+      .getContext("2d");
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.scale.grid.color = dividerColor;
+    Chart.defaults.elements.line.fill = false;
+    Chart.defaults.elements.line.tension = 0.3;
+    Chart.defaults.elements.line.borderWidth = 1.5;
+    Chart.defaults.elements.point.radius = 2;
+    Chart.defaults.elements.point.hitRadius = 10;
+    Chart.defaults.plugins.legend.position = "bottom";
+
+    this.forecastChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: dateTime,
+        datasets: [
+          {
+            label: "condition",
+            type: "line",
+            data: condition,
+            yAxisID: "PercentageAxis",
+            fill: true,
+            borderWidth: 3,
+            borderColor: condColor,
+            pointBorderColor: condColor,
+            // backgroundColor: config.forecast.temperature1_color,
+          },
+          {
+            label: "clouds",
+            type: "line",
+            data: clouds,
+            yAxisID: "PercentageAxis",
+            fill: true,
+            borderColor: attrColor,
+            pointBorderColor: attrColor,
+            // backgroundColor: config.forecast.temperature1_color,
+          },
+          {
+            label: "seeing",
+            type: "line",
+            data: seeing,
+            yAxisID: "PercentageAxis",
+            fill: true,
+            borderColor: attrColor,
+            pointBorderColor: attrColor,
+            // backgroundColor: config.forecast.temperature1_color,
+          },
+          {
+            label: "transparency",
+            type: "line",
+            data: transparency,
+            yAxisID: "PercentageAxis",
+            fill: true,
+            borderColor: attrColor,
+            pointBorderColor: attrColor,
+            // backgroundColor: config.forecast.temperature1_color,
+          },
+        ],
+      },
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            bottom: 10,
+          },
+        },
+        scales: {
+          DateTimeAxis: {
+            position: "top",
+            grid: {
+              drawBorder: false,
+              drawTicks: false,
+              zeroLineColor: dividerColor,
+            },
+            ticks: {
+              maxRotation: 0,
+              padding: 8,
+              callback: function (value, index, values) {
+                var datetime = this.getLabelForValue(value);
+                var weekday = new Date(datetime).toLocaleDateString(language, {
+                  weekday: "short",
+                });
+                var time = new Date(datetime).toLocaleTimeString(language, {
+                  hour12: false,
+                  hour: "numeric",
+                  minute: "numeric",
+                });
+                if (mode == "hourly") {
+                  return time;
+                }
+                return weekday;
+              },
+            },
+          },
+          PercentageAxis: {
+            position: "left",
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            grid: {
+              display: true,
+              drawBorder: false,
+              drawTicks: true,
+            },
+            ticks: {
+              display: true,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          datalabels: {
+            backgroundColor: backgroundColor,
+            borderColor: (context) => context.dataset.backgroundColor,
+            borderRadius: 8,
+            borderWidth: 1.5,
+            padding: 4,
+            font: {
+              // size: config.forecast.labels_font_size,
+              lineHeight: 0.7,
+            },
+            formatter: function (value, context) {
+              return context.dataset.data[context.dataIndex] + "%";
+            },
+          },
+          tooltip: {
+            caretSize: 0,
+            caretPadding: 15,
+            callbacks: {
+              title: function (TooltipItem) {
+                var datetime = TooltipItem[0].label;
+                return new Date(datetime).toLocaleDateString(language, {
+                  month: "short",
+                  day: "numeric",
+                  weekday: "short",
+                  hour: "numeric",
+                  minute: "numeric",
+                });
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  updateChart({ forecastItems, forecastChart } = this) {
+    let weather;
+    weather = this.hass.states[this._config.entity];
+    if (!weather || !weather.attributes || !weather.attributes.forecast) {
+      return [];
+    }
+    var forecast = weather.attributes.forecast.slice(0, forecastItems);
+    var i;
+    var dateTime = [];
+    var condition = [];
+    var clouds = [];
+    var seeing = [];
+    var transparency = [];
+    for (i = 0; i < forecast.length; i++) {
+      var d = forecast[i];
+      dateTime.push(d.datetime);
+      condition.push(d.condition);
+      clouds.push(d.cloudcover_percentage);
+      seeing.push(d.seeing_percentage);
+      transparency.push(d.transparency_percentage);
+    }
+    if (forecastChart) {
+      forecastChart.data.labels = dateTime;
+      forecastChart.data.datasets[0].data = condition;
+      forecastChart.data.datasets[1].data = clouds;
+      forecastChart.data.datasets[2].data = seeing;
+      forecastChart.data.datasets[3].data = transparency;
+      forecastChart.update();
+    }
   }
 
   getUnit(measure) {

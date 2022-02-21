@@ -59,6 +59,10 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.forecast !== false;
   }
 
+  get _graph() {
+    return this._config.graph !== false;
+  }
+
   get _hourly_forecast() {
     return true;
     // return this._config.hourly_forecast !== false;
@@ -159,6 +163,14 @@ export class AstroWeatherCardEditor extends LitElement {
                 @change="${this._valueChanged}"
               ></ha-switch
               ><span>Show forecast</span>
+            </div>
+            <div class="switch">
+              <ha-switch
+                .checked=${this._graph}
+                .configValue="${"graph"}"
+                @change="${this._valueChanged}"
+              ></ha-switch
+              ><span>Show graph</span>
             </div>
             <!-- <div class="switch">
               <ha-switch
