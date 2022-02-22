@@ -76,10 +76,6 @@ class AstroWeatherCard extends LitElement {
     this._config = config;
   }
 
-  // set hass(hass) {
-  //   this.weather = this._config.entity in hass.states;
-  // }
-
   shouldUpdate(changedProps) {
     return hasConfigOrEntityChanged(this, changedProps);
   }
@@ -199,7 +195,6 @@ class AstroWeatherCard extends LitElement {
     let sun_next_setting;
     let moon_next_rising;
     let moon_next_setting;
-    let data_timestamp;
 
     sun_next_rising = new Date(
       stateObj.attributes.sun_next_rising_astro
@@ -480,7 +475,6 @@ class AstroWeatherCard extends LitElement {
             borderWidth: 3,
             borderColor: condColor,
             pointBorderColor: condColor,
-            // backgroundColor: config.forecast.temperature1_color,
           },
           {
             label: "clouds",
@@ -490,7 +484,6 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
-            // backgroundColor: config.forecast.temperature1_color,
           },
           {
             label: "seeing",
@@ -500,7 +493,6 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
-            // backgroundColor: config.forecast.temperature1_color,
           },
           {
             label: "transparency",
@@ -510,7 +502,6 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
-            // backgroundColor: config.forecast.temperature1_color,
           },
         ],
       },
@@ -526,6 +517,7 @@ class AstroWeatherCard extends LitElement {
           DateTimeAxis: {
             position: "top",
             grid: {
+              display: false,
               drawBorder: false,
               drawTicks: false,
               zeroLineColor: dividerColor,
@@ -556,7 +548,7 @@ class AstroWeatherCard extends LitElement {
             min: 0,
             max: 100,
             grid: {
-              display: true,
+              display: false,
               drawBorder: false,
               drawTicks: true,
             },
@@ -576,7 +568,6 @@ class AstroWeatherCard extends LitElement {
             borderWidth: 1.5,
             padding: 4,
             font: {
-              // size: config.forecast.labels_font_size,
               lineHeight: 0.7,
             },
             formatter: function (value, context) {

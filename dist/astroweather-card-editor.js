@@ -185,7 +185,7 @@ export class AstroWeatherCardEditor extends LitElement {
             label="Number of future forcasts"
             type="number"
             min="1"
-            max="8"
+            max="16"
             value=${this._number_of_forecasts}
             .configValue="${"number_of_forecasts"}"
             @value-changed="${this._valueChanged}"
