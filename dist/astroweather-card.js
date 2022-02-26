@@ -224,14 +224,14 @@ class AstroWeatherCard extends LitElement {
       minute: "2-digit",
       hour12: false,
     });
-    data_timestamp = new Date(stateObj.attributes.timestamp).toLocaleTimeString(
-      lang,
-      {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }
-    );
+    // data_timestamp = new Date(stateObj.attributes.timestamp).toLocaleTimeString(
+    //   lang,
+    //   {
+    //     hour: "2-digit",
+    //     minute: "2-digit",
+    //     hour12: false,
+    //   }
+    // );
 
     this.numberElements++;
 
