@@ -150,10 +150,6 @@ class AstroWeatherCard extends LitElement {
       `;
     }
 
-    // Cloud Cover ${stateObj.attributes.cloudcover}<span class="unit">
-    // Seeing ${stateObj.attributes.seeing}<span class="unit">
-    // Transparency ${stateObj.attributes.transparency}<span class="unit">
-
     return html`
       <ha-card @click="${this._handleClick}">
         ${this._config.current !== false ? this.renderCurrent(stateObj) : ""}
@@ -224,14 +220,6 @@ class AstroWeatherCard extends LitElement {
       minute: "2-digit",
       hour12: false,
     });
-    // data_timestamp = new Date(stateObj.attributes.timestamp).toLocaleTimeString(
-    //   lang,
-    //   {
-    //     hour: "2-digit",
-    //     minute: "2-digit",
-    //     hour12: false,
-    //   }
-    // );
 
     this.numberElements++;
 
@@ -317,6 +305,10 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:arrow-down-circle-outline"></ha-icon>
           Moon Setting: ${moon_next_setting}
+        </li>
+        <li>
+          <ha-icon icon="mdi:moon-waning-gibbous"></ha-icon>
+          Moon Phase: ${stateObj.attributes.moon_phase} %
         </li>
       </ul>
     `;
