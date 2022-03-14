@@ -321,23 +321,30 @@ class AstroWeatherCard extends LitElement {
       <ul
         class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
       >
-        <li>
-          <ha-icon icon="mdi:weather-night"></ha-icon>
-          Today: ${stateObj.attributes.deepsky_forecast_today_plain}
-        </li>
-        <li>
-          <ha-icon icon="mdi:image-text"></ha-icon>
-          ${stateObj.attributes.deepsky_forecast_today_desc}
-        </li>
-
-        <li>
-          <ha-icon icon="mdi:weather-night"></ha-icon>
-          Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
-        </li>
-        <li>
-          <ha-icon icon="mdi:image-text"></ha-icon>
-          ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
-        </li>
+        ${stateObj.attributes.deepsky_forecast_today_plain
+          ? html`
+              <li>
+                <ha-icon icon="mdi:weather-night"></ha-icon>
+                Today: ${stateObj.attributes.deepsky_forecast_today_plain}
+              </li>
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_today_desc}
+              </li>
+            `
+          : ""}
+        ${stateObj.attributes.deepsky_forecast_tomorrow_plain
+          ? html`
+              <li>
+                <ha-icon icon="mdi:weather-night"></ha-icon>
+                Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
+              </li>
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+              </li>
+            `
+          : ""}
       </ul>
     `;
   }
