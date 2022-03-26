@@ -238,7 +238,7 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
           <b
-            >Cloud Cover: ${stateObj.attributes.cloudcover_percentage}<span
+            >Cloudless: ${stateObj.attributes.cloudcover_percentage}<span
               class="unit"
             >
               %
@@ -466,7 +466,7 @@ class AstroWeatherCard extends LitElement {
         labels: dateTime,
         datasets: [
           {
-            label: "condition",
+            label: "Condition",
             type: "line",
             data: condition,
             yAxisID: "PercentageAxis",
@@ -476,7 +476,7 @@ class AstroWeatherCard extends LitElement {
             pointBorderColor: condColor,
           },
           {
-            label: "clouds",
+            label: "Cloudless",
             type: "line",
             data: clouds,
             yAxisID: "PercentageAxis",
@@ -485,7 +485,7 @@ class AstroWeatherCard extends LitElement {
             pointBorderColor: attrColor,
           },
           {
-            label: "seeing",
+            label: "Seeing",
             type: "line",
             data: seeing,
             yAxisID: "PercentageAxis",
@@ -494,7 +494,7 @@ class AstroWeatherCard extends LitElement {
             pointBorderColor: attrColor,
           },
           {
-            label: "transparency",
+            label: "Transparency",
             type: "line",
             data: transparency,
             yAxisID: "PercentageAxis",
