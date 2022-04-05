@@ -133,7 +133,7 @@ class AstroWeatherCard extends LitElement {
         </ha-card>
       `;
     }
-    if (!stateObj.attributes.condition_percentage) {
+    if (stateObj.attributes.attribution != "Powered by 7Timer") {
       return html`
         <style>
           .not-found {
