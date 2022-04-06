@@ -325,7 +325,8 @@ class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
-                Today: ${stateObj.attributes.deepsky_forecast_today_plain}
+                ${stateObj.attributes.deepsky_forecast_today_dayname}:
+                ${stateObj.attributes.deepsky_forecast_today_plain}
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
@@ -337,7 +338,8 @@ class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
-                Tomorrow: ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
+                ${stateObj.attributes.deepsky_forecast_tomorrow_dayname}:
+                ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
@@ -358,13 +360,13 @@ class AstroWeatherCard extends LitElement {
     return html`
       <div class="forecast clear ${this.numberElements > 1 ? "spacer" : ""}">
         <div class="forecastrow">
-          <div class="label">Time</div>
-          <div class="label">Cond</div>
-          <div class="label">Clouds</div>
-          <div class="label">Seeing</div>
-          <div class="label">Trans</div>
-          <div class="label">LI</div>
-          <div class="label">Temp</div>
+          <ha-icon icon="mdi:progress-clock"></ha-icon>
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
+          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
+          <ha-icon icon="mdi:waves"></ha-icon>
+          <ha-icon icon="mdi:safety-goggles"></ha-icon>
+          <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
+          <ha-icon icon="mdi:thermometer"></ha-icon>
         </div>
         ${forecast
           .slice(
@@ -471,9 +473,11 @@ class AstroWeatherCard extends LitElement {
             data: condition,
             yAxisID: "PercentageAxis",
             fill: true,
-            borderWidth: 3,
+            borderWidth: 2,
             borderColor: condColor,
             pointBorderColor: condColor,
+            pointRadius: 5,
+            pointStyle: "star",
           },
           {
             label: "Cloudless",
@@ -483,6 +487,8 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
+            pointRadius: 4,
+            pointStyle: "rect",
           },
           {
             label: "Seeing",
@@ -492,6 +498,8 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
+            pointRadius: 4,
+            pointStyle: "triangle",
           },
           {
             label: "Transparency",
@@ -501,6 +509,8 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderColor: attrColor,
             pointBorderColor: attrColor,
+            pointRadius: 4,
+            pointStyle: "circle",
           },
         ],
       },
@@ -558,7 +568,16 @@ class AstroWeatherCard extends LitElement {
         },
         plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: "bottom",
+            labels: {
+              boxWitdth: 10,
+              font: {
+                size: 8,
+              },
+              padding: 5,
+              usePointStyle: true,
+            },
           },
           datalabels: {
             backgroundColor: backgroundColor,
@@ -744,6 +763,12 @@ class AstroWeatherCard extends LitElement {
         width: 100%;
         margin: 0 auto;
         display: flex;
+      }
+
+      .forecast ha-icon {
+        height: 22px;
+        margin-right: 5px;
+        color: var(--paper-item-icon-color);
       }
 
       .forecastrow {
