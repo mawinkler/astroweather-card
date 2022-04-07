@@ -238,7 +238,7 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
           <b
-            >Cloudless: ${stateObj.attributes.cloudcover_percentage}<span
+            >Cloudless: ${stateObj.attributes.cloudless_percentage}<span
               class="unit"
             >
               %
@@ -385,7 +385,7 @@ class AstroWeatherCard extends LitElement {
                     hour12: false,
                   })}
                   <div class="value_item_bold">${daily.condition} %</div>
-                  <div class="value_item">${daily.cloudcover_percentage} %</div>
+                  <div class="value_item">${daily.cloudless_percentage} %</div>
                   <div class="value_item">${daily.seeing_percentage} %</div>
                   <div class="value_item">
                     ${daily.transparency_percentage} %
@@ -439,7 +439,7 @@ class AstroWeatherCard extends LitElement {
       var d = forecast[i];
       dateTime.push(d.datetime);
       condition.push(d.condition);
-      clouds.push(d.cloudcover_percentage);
+      clouds.push(d.cloudless_percentage);
       seeing.push(d.seeing_percentage);
       transparency.push(d.transparency_percentage);
     }
@@ -630,7 +630,7 @@ class AstroWeatherCard extends LitElement {
       var d = forecast[i];
       dateTime.push(d.datetime);
       condition.push(d.condition);
-      clouds.push(d.cloudcover_percentage);
+      clouds.push(d.cloudless_percentage);
       seeing.push(d.seeing_percentage);
       transparency.push(d.transparency_percentage);
     }
