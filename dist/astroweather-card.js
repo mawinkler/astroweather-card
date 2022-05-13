@@ -195,6 +195,8 @@ class AstroWeatherCard extends LitElement {
     sun_next_rising = new Date(
       stateObj.attributes.sun_next_rising_astro
     ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -202,6 +204,8 @@ class AstroWeatherCard extends LitElement {
     sun_next_setting = new Date(
       stateObj.attributes.sun_next_setting_astro
     ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -209,6 +213,8 @@ class AstroWeatherCard extends LitElement {
     moon_next_rising = new Date(
       stateObj.attributes.moon_next_rising
     ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -216,6 +222,8 @@ class AstroWeatherCard extends LitElement {
     moon_next_setting = new Date(
       stateObj.attributes.moon_next_setting
     ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
