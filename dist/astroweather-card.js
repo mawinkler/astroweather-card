@@ -539,7 +539,13 @@ class AstroWeatherCard extends LitElement {
             fill: true,
             borderWidth: 2,
             borderColor: condColor,
-            pointBorderColor: condColor,
+            pointBorderColor: function (context) {
+              var index = context.dataIndex;
+              var hour = new Date(dateTime[index]).getHours();
+              return hour >= 19 || hour <= 3
+                ? style.getPropertyValue("--paper-item-icon-active-color")
+                : condColor;
+            },
             pointRadius: 5,
             pointStyle: "star",
           },
