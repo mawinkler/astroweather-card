@@ -1,6 +1,6 @@
 # Lovelace AstroWeather Card
 
-This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.7+`.
+This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.7+`. For nautical dawn and dusk calculations the required version is `0.22.0+`.
 
 <img src="./images/astroweather-card.png" alt="AstroWeather Card" width="400"/>
 
