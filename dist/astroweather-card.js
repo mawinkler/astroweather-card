@@ -189,11 +189,15 @@ class AstroWeatherCard extends LitElement {
     const sun = this.hass.states["sun.sun"];
     let sun_next_rising;
     let sun_next_setting;
+    let sun_next_rising_nautical;
+    let sun_next_setting_nautical;
+    let sun_next_rising_astro;
+    let sun_next_setting_astro;
     let moon_next_rising;
     let moon_next_setting;
 
     sun_next_rising = new Date(
-      stateObj.attributes.sun_next_rising_astro
+      stateObj.attributes.sun_next_rising
     ).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
@@ -202,6 +206,42 @@ class AstroWeatherCard extends LitElement {
       hour12: false,
     });
     sun_next_setting = new Date(
+      stateObj.attributes.sun_next_setting
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_rising_nautical = new Date(
+      stateObj.attributes.sun_next_rising_nautical
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_setting_nautical = new Date(
+      stateObj.attributes.sun_next_setting_nautical
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_rising_astro = new Date(
+      stateObj.attributes.sun_next_rising_astro
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_setting_astro = new Date(
       stateObj.attributes.sun_next_setting_astro
     ).toLocaleTimeString(lang, {
       month: "2-digit",
@@ -299,20 +339,36 @@ class AstroWeatherCard extends LitElement {
           Precipitation: ${stateObj.attributes.prec_type}
         </li>
         <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Civil: ${sun_next_setting}
+        </li>
+        <li>
           <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-          Sun Rising: ${sun_next_rising}
+          Civil: ${sun_next_rising}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-          Sun Setting: ${sun_next_setting}
+          Nautical: ${sun_next_setting_nautical}
         </li>
         <li>
-          <ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>
-          Moon Rising: ${moon_next_rising}
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Nautical: ${sun_next_rising_nautical}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Astro: ${sun_next_setting_astro}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Astro: ${sun_next_rising_astro}
         </li>
         <li>
           <ha-icon icon="mdi:arrow-down-circle-outline"></ha-icon>
-          Moon Setting: ${moon_next_setting}
+          Setting: ${moon_next_setting}
+        </li>
+        <li>
+          <ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>
+          Rising: ${moon_next_rising}
         </li>
         <li>
           <ha-icon icon="mdi:moon-waning-gibbous"></ha-icon>
