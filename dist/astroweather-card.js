@@ -313,7 +313,8 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
-          Temperature: ${stateObj.attributes.temperature} °C
+          Temperature: ${stateObj.attributes.temperature}
+          ${this.getUnit("temperature")}
         </li>
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
@@ -322,7 +323,10 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:windsock"></ha-icon>
           Wind: ${stateObj.attributes.wind_bearing}
-          ${stateObj.attributes.wind_speed} m/s
+          ${this.getUnit("wind_speed") == "m/s"
+            ? stateObj.attributes.wind_speed
+            : Math.round(stateObj.attributes.wind_speed * 2.23694)}
+          ${this.getUnit("wind_speed")}
         </li>
         <li>
           ${stateObj.attributes.prec_type == "Snow"
