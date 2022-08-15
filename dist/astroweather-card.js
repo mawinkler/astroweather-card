@@ -428,12 +428,12 @@ class AstroWeatherCard extends LitElement {
     return html`
       <div class="forecast clear ${this.numberElements > 1 ? "spacer" : ""}">
         <div class="forecastrow">
-          <ha-icon icon="mdi:progress-clock"></ha-icon>
-          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
-          <ha-icon icon="mdi:waves"></ha-icon>
-          <ha-icon icon="mdi:safety-goggles"></ha-icon>
-          <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
+          <ha-icon icon="mdi:progress-clock"></ha-icon><br />
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon><br />
+          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon><br />
+          <ha-icon icon="mdi:waves"></ha-icon><br />
+          <ha-icon icon="mdi:safety-goggles"></ha-icon><br />
+          <ha-icon icon="mdi:hand-pointing-up"></ha-icon><br />
           <ha-icon icon="mdi:thermometer"></ha-icon>
         </div>
         ${forecast
