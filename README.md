@@ -12,7 +12,16 @@ Thanks for all picking this card up.
 
 ### HACS installation
 
-TODO
+1. Open the community store and choose `Add custom repository` from the three dots in the upper right corner.
+2. In the bottom of the dialog add
+
+   `https://github.com/mawinkler/astroweather-card` as the Repository
+
+   and
+
+   `Lovelace` from the Category List
+3. Close the dialog
+4. Now search for `AstroWeather Card`, select it and press download in the bottom right.
 
 ### Manual Installation
 
@@ -36,7 +45,7 @@ And add a card with type `custom:astroweather-card`:
 
 ```yaml
 type: custom:astroweather-card
-entity: weather.astroweather_LONGITUTE_LATITUDE
+entity: weather.astroweather_LONGITUDE_LATITUDE
 name: AstroWeather
 forecast: true
 deepskydetails: true
