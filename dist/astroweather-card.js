@@ -1,3 +1,21 @@
+const LitElement = customElements.get("ha-panel-lovelace")
+  ? Object.getPrototypeOf(customElements.get("ha-panel-lovelace"))
+  : Object.getPrototypeOf(customElements.get("hc-lovelace"));
+const html = LitElement.prototype.html;
+const css = LitElement.prototype.css;
+
+import { Chart, registerables } from "https://unpkg.com/chart.js@3.7.1?module";
+Chart.register(...registerables);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "astroweather-card",
+  name: "AstroWeather Card",
+  description: "A custom weather card made for AstroWeather.",
+  preview: true,
+  documentationURL: "https://github.com/mawinkler/astroweather-card",
+});
+
 const fireEvent = (node, type, detail, options) => {
   options = options || {};
   detail = detail === null || detail === undefined ? {} : detail;
@@ -11,283 +29,889 @@ const fireEvent = (node, type, detail, options) => {
   return event;
 };
 
-if (
-  !customElements.get("ha-switch") &&
-  customElements.get("paper-toggle-button")
-) {
-  customElements.define("ha-switch", customElements.get("paper-toggle-button"));
+function hasConfigOrEntityChanged(element, changedProps) {
+  if (changedProps.has("_config")) {
+    return true;
+  }
+
+  const oldHass = changedProps.get("hass");
+  if (oldHass) {
+    return (
+      oldHass.states[element._config.entity] !==
+        element.hass.states[element._config.entity] ||
+      oldHass.states["sun.sun"] !== element.hass.states["sun.sun"]
+    );
+  }
+
+  return true;
 }
 
-const LitElement = customElements.get("hui-masonry-view")
-  ? Object.getPrototypeOf(customElements.get("hui-masonry-view"))
-  : Object.getPrototypeOf(customElements.get("hui-view"));
-const html = LitElement.prototype.html;
-const css = LitElement.prototype.css;
-
-const HELPERS = window.loadCardHelpers();
-
-export class AstroWeatherCardEditor extends LitElement {
-  setConfig(config) {
-    this._config = { ...config };
-  }
-
+class AstroWeatherCard extends LitElement {
   static get properties() {
-    return { hass: {}, _config: {} };
+    return {
+      _config: {},
+      hass: {},
+      forecastChart: { type: Object },
+      forecastItems: { type: Number },
+    };
   }
 
-  get _entity() {
-    return this._config.entity || "";
+  static async getConfigElement() {
+    await import("./astroweather-card-editor.js");
+    return document.createElement("astroweather-card-editor");
   }
 
-  get _name() {
-    return this._config.name || "";
+  static getStubConfig(hass, unusedEntities, allEntities) {
+    // let entity = unusedEntities.find((eid) => eid.split(".")[0] === "weather");
+    // if (!entity) {
+    //   entity = allEntities.find((eid) => eid.split(".")[0] === "weather");
+    // }
+    // return { entity };
+    let stubConfig = {};
+    let entity = unusedEntities.find(
+      (eid) => eid.split("_")[0] === "weather.astroweather"
+    );
+    if (!entity) {
+      entity = allEntities.find(
+        (eid) => eid.split("_")[0] === "weather.astroweather"
+      );
+    }
+    return {
+      entity,
+      line_color_condition: "#f07178",
+      line_color_condition_night: "#eeffff",
+      line_color_cloudless: "#c3e88d",
+      line_color_seeing: "#ffcb6b",
+      line_color_transparency: "#82aaff",
+    };
+    // return { stubConfig };
   }
 
-  get _current() {
-    return this._config.current !== false;
+  setConfig(config) {
+    if (!config.entity) {
+      throw new Error("Please define an AstroWeather entity");
+    }
+    this._config = config;
   }
 
-  get _details() {
-    return this._config.details !== false;
-  }
-
-  get _deepskydetails() {
-    return this._config.deepskydetails !== false;
-  }
-
-  get _line_color_condition() {
-    return this._config.line_color_condition || "";
-  }
-
-  get _line_color_condition_night() {
-    return this._config.line_color_condition_night || "";
-  }
-
-  get _line_color_cloudless() {
-    return this._config.line_color_cloudless || "";
-  }
-
-  get _line_color_seeing() {
-    return this._config.line_color_seeing || "";
-  }
-
-  get _line_color_transparency() {
-    return this._config.line_color_transparency || "";
-  }
-
-  get _forecast() {
-    return this._config.forecast !== false;
-  }
-
-  get _graph() {
-    return this._config.graph !== false;
-  }
-
-  get _hourly_forecast() {
-    return true;
-    // return this._config.hourly_forecast !== false;
-  }
-
-  get _number_of_forecasts() {
-    return this._config.number_of_forecasts || 5;
+  shouldUpdate(changedProps) {
+    return hasConfigOrEntityChanged(this, changedProps);
   }
 
   firstUpdated() {
-    HELPERS.then((help) => {
-      if (help.importMoreInfoControl) {
-        help.importMoreInfoControl("fan");
+    if (this._config.graph !== false) {
+      this.drawChart();
+    }
+  }
+
+  updated(changedProperties) {
+    if (this._config.graph !== false) {
+      if (changedProperties.has("config")) {
+        this.drawChart();
       }
-    });
+      // if (changedProperties.has("weather")) {
+      if (changedProperties.has("config")) {
+        this.updateChart();
+      }
+    }
   }
 
   render() {
-    if (!this.hass) {
+    if (!this._config || !this.hass) {
       return html``;
     }
 
-    const entities = Object.keys(this.hass.states).filter(
-      (eid) => eid.substr(0, eid.indexOf("_")) === "weather.astroweather"
-    );
-    // const entities = Object.keys(this.hass.states)
-    //   .filter((entity_id) => entity_id.includes("weather.astroweather"))
-    //   .reduce((cur, key) => {
-    //     return Object.assign(cur, { [key]: entity_id[key] });
-    //   }, {});
+    this.numberElements = 0;
+
+    const lang = this.hass.selectedLanguage || this.hass.language;
+    const stateObj = this.hass.states[this._config.entity];
+
+    if (!stateObj) {
+      return html`
+        <style>
+          .not-found {
+            flex: 1;
+            background-color: yellow;
+            padding: 8px;
+          }
+        </style>
+        <ha-card>
+          <div class="not-found">
+            Entity not available: ${this._config.entity}
+          </div>
+        </ha-card>
+      `;
+    }
+    if (stateObj.attributes.attribution != "Powered by 7Timer") {
+      return html`
+        <style>
+          .not-found {
+            flex: 1;
+            background-color: yellow;
+            padding: 8px;
+          }
+        </style>
+        <ha-card>
+          <div class="not-found">
+            Entity is not an AstroWeather entity: ${this._config.entity}
+          </div>
+        </ha-card>
+      `;
+    }
 
     return html`
-      <div class="card-config">
-        <div>
-          <paper-input
-            label="Name"
-            .value="${this._name}"
-            .configValue="${"name"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          ${customElements.get("ha-entity-picker")
-            ? html`
-                <ha-entity-picker
-                  .hass="${this.hass}"
-                  .value="${this._entity}"
-                  .configValue=${"entity"}
-                  domain-filter="weather"
-                  @change="${this._valueChanged}"
-                  allow-custom-entity
-                ></ha-entity-picker>
-              `
-            : html`
-                <paper-dropdown-menu
-                  label="Entity"
-                  @value-changed="${this._valueChanged}"
-                  .configValue="${"entity"}"
-                >
-                  <paper-listbox
-                    slot="dropdown-content"
-                    .selected="${entities.indexOf(this._entity)}"
-                  >
-                    ${entities.map((entity) => {
-                      return html` <paper-item>${entity}</paper-item> `;
-                    })}
-                  </paper-listbox>
-                </paper-dropdown-menu>
-              `}
-          <div class="switches">
-            <div class="switch">
-              <ha-switch
-                .checked=${this._current}
-                .configValue="${"current"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show current</span>
-            </div>
-            <div class="switch">
-              <ha-switch
-                .checked=${this._details}
-                .configValue="${"details"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show details</span>
-            </div>
-            <div class="switch">
-              <ha-switch
-                .checked=${this._deepskydetails}
-                .configValue="${"deepskydetails"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show deepsky details</span>
-            </div>
-            <div class="switch">
-              <ha-switch
-                .checked=${this._forecast}
-                .configValue="${"forecast"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show forecast</span>
-            </div>
-            <div class="switch">
-              <ha-switch
-                .checked=${this._graph}
-                .configValue="${"graph"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show graph</span>
-            </div>
-            <!-- <div class="switch">
-              <ha-switch
-                .checked=${this._hourly_forecast}
-                .configValue="${"hourly_forecast"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
-              ><span>Show hourly forecast</span>
-            </div> -->
-          </div>
-          <paper-input
-            label="Number of future forcasts2"
-            type="number"
-            min="1"
-            max="32"
-            value=${this._number_of_forecasts}
-            .configValue="${"number_of_forecasts"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color condition"
-            type="text"
-            value=${this._line_color_condition}
-            .configValue="${"line_color_condition"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color condition night"
-            type="text"
-            value=${this._line_color_condition_night}
-            .configValue="${"line_color_condition_night"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color cloudless"
-            type="text"
-            value=${this._line_color_cloudless}
-            .configValue="${"line_color_cloudless"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color seeing"
-            type="text"
-            value=${this._line_color_seeing}
-            .configValue="${"line_color_seeing"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color transparency"
-            type="text"
-            value=${this._line_color_transparency}
-            .configValue="${"line_color_transparency"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-        </div>
+      <ha-card @click="${this._handleClick}">
+        ${this._config.current !== false ? this.renderCurrent(stateObj) : ""}
+        ${this._config.details !== false
+          ? this.renderDetails(stateObj, lang)
+          : ""}
+        ${this._config.deepskydetails !== false
+          ? this.renderDeepSkyForecast(stateObj, lang)
+          : ""}
+        ${this._config.forecast !== false
+          ? this.renderForecast(stateObj.attributes.forecast, lang)
+          : ""}
+        ${this._config.graph !== false
+          ? html`<div class="chart-container">
+              <canvas id="forecastChart"></canvas>
+            </div>`
+          : ""}
+      </ha-card>
+    `;
+  }
+
+  renderCurrent(stateObj) {
+    this.numberElements++;
+
+    return html`
+      <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
+        ${this._config.name
+          ? html` <span class="title"> ${this._config.name} </span> `
+          : ""}
+
+        <span class="condition"> ${stateObj.attributes.condition_plain}</span>
       </div>
     `;
   }
 
-  _valueChanged(ev) {
-    if (!this._config || !this.hass) {
-      return;
+  renderDetails(stateObj, lang) {
+    const sun = this.hass.states["sun.sun"];
+    let sun_next_rising;
+    let sun_next_setting;
+    let sun_next_rising_nautical;
+    let sun_next_setting_nautical;
+    let sun_next_rising_astro;
+    let sun_next_setting_astro;
+    let moon_next_rising;
+    let moon_next_setting;
+
+    sun_next_rising = new Date(
+      stateObj.attributes.sun_next_rising
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_setting = new Date(
+      stateObj.attributes.sun_next_setting
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_rising_nautical = new Date(
+      stateObj.attributes.sun_next_rising_nautical
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_setting_nautical = new Date(
+      stateObj.attributes.sun_next_setting_nautical
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_rising_astro = new Date(
+      stateObj.attributes.sun_next_rising_astro
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    sun_next_setting_astro = new Date(
+      stateObj.attributes.sun_next_setting_astro
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    moon_next_rising = new Date(
+      stateObj.attributes.moon_next_rising
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    moon_next_setting = new Date(
+      stateObj.attributes.moon_next_setting
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    this.numberElements++;
+
+    return html`
+      <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
+        <li>
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
+          <b
+            >Condition: ${stateObj.attributes.condition_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
+          <b
+            >Cloudless: ${stateObj.attributes.cloudless_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:waves"></ha-icon>
+          <b
+            >Seeing: ${stateObj.attributes.seeing_percentage}<span class="unit">
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:safety-goggles"></ha-icon>
+          <b
+            >Transparency: ${stateObj.attributes.transparency_percentage}<span
+              class="unit"
+            >
+              %
+            </span></b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:thermometer"></ha-icon>
+          Temperature: ${stateObj.attributes.temperature}
+          ${this.getUnit("temperature")}
+        </li>
+        <li>
+          <ha-icon icon="mdi:water-percent"></ha-icon>
+          Humidity: ${stateObj.attributes.humidity} %
+        </li>
+        <li>
+          <ha-icon icon="mdi:windsock"></ha-icon>
+          Wind: ${stateObj.attributes.wind_bearing}
+          ${this.getUnit("wind_speed") == "m/s"
+            ? stateObj.attributes.wind_speed
+            : Math.round(stateObj.attributes.wind_speed * 2.23694)}
+          ${this.getUnit("wind_speed")}
+        </li>
+        <li>
+          ${stateObj.attributes.prec_type == "Snow"
+            ? html` <ha-icon icon="mdi:weather-snowy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Rain"
+            ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Frzr"
+            ? html` <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon> `
+            : stateObj.attributes.prec_type == "Icep"
+            ? html` <ha-icon icon="mdi:weather-hail"></ha-icon> `
+            : stateObj.attributes.prec_type == "None"
+            ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
+            : ""}
+          Precipitation: ${stateObj.attributes.prec_type}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Civil: ${sun_next_setting}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Civil: ${sun_next_rising}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Nautical: ${sun_next_setting_nautical}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Nautical: ${sun_next_rising_nautical}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
+          Astro: ${sun_next_setting_astro}
+        </li>
+        <li>
+          <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
+          Astro: ${sun_next_rising_astro}
+        </li>
+        <li>
+          <ha-icon icon="mdi:arrow-down-circle-outline"></ha-icon>
+          Setting: ${moon_next_setting}
+        </li>
+        <li>
+          <ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>
+          Rising: ${moon_next_rising}
+        </li>
+        <li>
+          <ha-icon icon="mdi:moon-waning-gibbous"></ha-icon>
+          Moon Phase: ${stateObj.attributes.moon_phase} %
+        </li>
+      </ul>
+    `;
+  }
+
+  renderDeepSkyForecast(stateObj) {
+    this.numberElements++;
+
+    return html`
+      <ul
+        class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
+      >
+        ${stateObj.attributes.deepsky_forecast_today_plain
+          ? html`
+              <li>
+                <ha-icon icon="mdi:weather-night"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_today_dayname}:
+                ${stateObj.attributes.deepsky_forecast_today_plain}
+              </li>
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_today_desc}
+              </li>
+            `
+          : ""}
+        ${stateObj.attributes.deepsky_forecast_tomorrow_plain
+          ? html`
+              <li>
+                <ha-icon icon="mdi:weather-night"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_tomorrow_dayname}:
+                ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
+              </li>
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+              </li>
+            `
+          : ""}
+      </ul>
+    `;
+  }
+
+  renderForecast(forecast, lang) {
+    if (!forecast || forecast.length === 0) {
+      return html``;
     }
-    const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
-      return;
+
+    this.numberElements++;
+    return html`
+      <div class="forecast clear ${this.numberElements > 1 ? "spacer" : ""}">
+        <div class="forecastrow">
+          <ha-icon icon="mdi:progress-clock"></ha-icon><br />
+          <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon><br />
+          <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon><br />
+          <ha-icon icon="mdi:waves"></ha-icon><br />
+          <ha-icon icon="mdi:safety-goggles"></ha-icon><br />
+          <ha-icon icon="mdi:hand-pointing-up"></ha-icon><br />
+          <ha-icon icon="mdi:thermometer"></ha-icon>
+        </div>
+        ${forecast
+          .slice(
+            0,
+            this._config.number_of_forecasts
+              ? this._config.number_of_forecasts
+              : 5
+          )
+          .map(
+            (daily) => html`
+              <div class="forecastrow">
+                <div class="forecastrowname">
+                  ${new Date(daily.datetime).toLocaleTimeString(lang, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
+                  <div class="value_item_bold">${daily.condition} %</div>
+                  <div class="value_item">${daily.cloudless_percentage} %</div>
+                  <div class="value_item">${daily.seeing_percentage} %</div>
+                  <div class="value_item">
+                    ${daily.transparency_percentage} %
+                  </div>
+                  <div class="value_item">${daily.lifted_index} °</div>
+                  <div class="value_item">
+                    ${daily.temperature} ${this.getUnit("temperature")}
+                  </div>
+                </div>
+              </div>
+            `
+          )}
+      </div>
+    `;
+    // <!-- ${this._config.hourly_forecast
+    //   ? new Date(daily.datetime).toLocaleTimeString(lang, {
+    //       hour: "2-digit",
+    //       minute: "2-digit",
+    //       hour12: false,
+    //     })
+    //   : new Date(daily.datetime).toLocaleDateString(lang, {
+    //       weekday: "short",
+    //     })} -->
+  }
+
+  drawChart({ config, language, forecastItems } = this) {
+    let weather;
+    weather = this.hass.states[this._config.entity];
+    if (!weather || !weather.attributes || !weather.attributes.forecast) {
+      return [];
     }
-    if (target.configValue) {
-      if (target.value === "") {
-        delete this._config[target.configValue];
-      } else {
-        this._config = {
-          ...this._config,
-          [target.configValue]:
-            target.checked !== undefined ? target.checked : target.value,
-        };
-      }
+    if (this.forecastChart) {
+      this.forecastChart.destroy();
     }
-    fireEvent(this, "config-changed", { config: this._config });
+    var forecast = weather.attributes.forecast.slice(
+      0,
+      this._config.number_of_forecasts ? this._config.number_of_forecasts : 5
+    );
+    // if ((new Date(forecast[1].datetime) - new Date(forecast[0].datetime)) < 864e5)
+    //   var mode = 'hourly';
+    // else
+    //   var mode = 'daily';
+    var mode = "hourly";
+    var i;
+    var dateTime = [];
+    var condition = [];
+    var clouds = [];
+    var seeing = [];
+    var transparency = [];
+    for (i = 0; i < forecast.length; i++) {
+      var d = forecast[i];
+      dateTime.push(d.datetime);
+      condition.push(d.condition);
+      clouds.push(d.cloudless_percentage);
+      seeing.push(d.seeing_percentage);
+      transparency.push(d.transparency_percentage);
+    }
+    var style = getComputedStyle(document.body);
+    var backgroundColor = style.getPropertyValue("--card-background-color");
+    var textColor = style.getPropertyValue("--primary-text-color");
+    var colorCondition = this._config.line_color_condition;
+    var colorConditionNight = this._config.line_color_condition_night;
+    var colorCloudless = this._config.line_color_cloudless;
+    var colorSeeing = this._config.line_color_seeing;
+    var colorTransparency = this._config.line_color_transparency;
+    // style.getPropertyValue("--primary-text-color");
+    var dividerColor = style.getPropertyValue("--divider-color");
+
+    const ctx = this.renderRoot
+      .querySelector("#forecastChart")
+      .getContext("2d");
+
+    Chart.defaults.color = textColor;
+    Chart.defaults.scale.grid.color = dividerColor;
+    Chart.defaults.elements.line.fill = false;
+    Chart.defaults.elements.line.tension = 0.3;
+    Chart.defaults.elements.line.borderWidth = 1.5;
+    Chart.defaults.elements.point.radius = 2;
+    Chart.defaults.elements.point.hitRadius = 10;
+    Chart.defaults.plugins.legend.position = "bottom";
+
+    var colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    colorConditionGradient.addColorStop(0, colorCondition);
+    colorConditionGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    var colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    colorCloudlessGradient.addColorStop(0, colorCloudless);
+    colorCloudlessGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    var colorSeeingGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    colorSeeingGradient.addColorStop(0, colorSeeing);
+    colorSeeingGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    var colorTransparencyGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    colorTransparencyGradient.addColorStop(0, colorTransparency);
+    colorTransparencyGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    this.forecastChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: dateTime,
+        datasets: [
+          {
+            label: "Condition",
+            type: "line",
+            data: condition,
+            yAxisID: "PercentageAxis",
+            backgroundColor: colorConditionGradient,
+            fill: true,
+            borderWidth: 2,
+            borderColor: colorCondition,
+            pointBorderColor: function (context) {
+              var index = context.dataIndex;
+              var hour = new Date(dateTime[index]).getHours();
+              return hour >= 19 || hour <= 3
+                ? colorConditionNight
+                : colorCondition;
+            },
+            pointRadius: 5,
+            pointStyle: "star",
+          },
+          {
+            label: "Cloudless",
+            type: "line",
+            data: clouds,
+            yAxisID: "PercentageAxis",
+            backgroundColor: colorCloudlessGradient,
+            fill: true,
+            borderColor: colorCloudless,
+            pointBorderColor: colorCloudless,
+            pointRadius: 4,
+            pointStyle: "rect",
+          },
+          {
+            label: "Seeing",
+            type: "line",
+            data: seeing,
+            yAxisID: "PercentageAxis",
+            backgroundColor: colorSeeingGradient,
+            fill: true,
+            borderColor: colorSeeing,
+            pointBorderColor: colorSeeing,
+            pointRadius: 4,
+            pointStyle: "triangle",
+          },
+          {
+            label: "Transparency",
+            type: "line",
+            data: transparency,
+            yAxisID: "PercentageAxis",
+            backgroundColor: colorTransparencyGradient,
+            fill: true,
+            borderColor: colorTransparency,
+            pointBorderColor: colorTransparency,
+            pointRadius: 4,
+            pointStyle: "circle",
+          },
+        ],
+      },
+      options: {
+        animation: false,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            bottom: 10,
+          },
+        },
+        scales: {
+          DateTimeAxis: {
+            position: "top",
+            grid: {
+              display: false,
+              drawBorder: false,
+              drawTicks: false,
+              zeroLineColor: dividerColor,
+            },
+            ticks: {
+              maxRotation: 0,
+              padding: 8,
+              callback: function (value, index, values) {
+                var datetime = this.getLabelForValue(value);
+                var weekday = new Date(datetime).toLocaleDateString(language, {
+                  weekday: "short",
+                });
+                var time = new Date(datetime).toLocaleTimeString(language, {
+                  hour12: false,
+                  hour: "numeric",
+                  minute: "numeric",
+                });
+                if (mode == "hourly") {
+                  return time;
+                }
+                return weekday;
+              },
+            },
+          },
+          PercentageAxis: {
+            position: "left",
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            grid: {
+              display: false,
+              drawBorder: false,
+              drawTicks: true,
+            },
+            ticks: {
+              display: true,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              boxWitdth: 10,
+              font: {
+                size: 8,
+              },
+              padding: 5,
+              usePointStyle: true,
+            },
+          },
+          datalabels: {
+            backgroundColor: backgroundColor,
+            borderColor: (context) => context.dataset.backgroundColor,
+            borderRadius: 8,
+            borderWidth: 1.5,
+            padding: 4,
+            font: {
+              lineHeight: 0.7,
+            },
+            formatter: function (value, context) {
+              return context.dataset.data[context.dataIndex] + "%";
+            },
+          },
+          tooltip: {
+            caretSize: 0,
+            caretPadding: 15,
+            callbacks: {
+              title: function (TooltipItem) {
+                var datetime = TooltipItem[0].label;
+                return new Date(datetime).toLocaleDateString(language, {
+                  month: "short",
+                  day: "numeric",
+                  weekday: "short",
+                  hour: "numeric",
+                  minute: "numeric",
+                });
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  updateChart({ forecastItems, forecastChart } = this) {
+    let weather;
+    weather = this.hass.states[this._config.entity];
+    if (!weather || !weather.attributes || !weather.attributes.forecast) {
+      return [];
+    }
+    var forecast = weather.attributes.forecast.slice(0, forecastItems);
+    var i;
+    var dateTime = [];
+    var condition = [];
+    var clouds = [];
+    var seeing = [];
+    var transparency = [];
+    for (i = 0; i < forecast.length; i++) {
+      var d = forecast[i];
+      dateTime.push(d.datetime);
+      condition.push(d.condition);
+      clouds.push(d.cloudless_percentage);
+      seeing.push(d.seeing_percentage);
+      transparency.push(d.transparency_percentage);
+    }
+    if (forecastChart) {
+      forecastChart.data.labels = dateTime;
+      forecastChart.data.datasets[0].data = condition;
+      forecastChart.data.datasets[1].data = clouds;
+      forecastChart.data.datasets[2].data = seeing;
+      forecastChart.data.datasets[3].data = transparency;
+      forecastChart.update();
+    }
+  }
+
+  getUnit(measure) {
+    return this.hass.config.unit_system[measure] || "";
+  }
+
+  _handleClick() {
+    fireEvent(this, "hass-more-info", { entityId: this._config.entity });
+  }
+
+  getCardSize() {
+    return 3;
   }
 
   static get styles() {
     return css`
-      .switches {
-        margin: 8px 0;
+      ha-card {
+        cursor: pointer;
+        margin: auto;
+        overflow: hidden;
+        padding-top: 1.3em;
+        padding-bottom: 1.3em;
+        padding-left: 1em;
+        padding-right: 1em;
+        position: relative;
+      }
+
+      .spacer {
+        padding-top: 1em;
+      }
+
+      .clear {
+        clear: both;
+      }
+
+      .title {
+        position: absolute;
+        font-weight: 400;
+        font-size: 2em;
+        color: var(--primary-text-color);
+      }
+
+      .condition {
+        font-size: 1.2rem;
+        color: var(--primary-text-color);
+        position: absolute;
+        right: 1em;
+      }
+
+      .conditiondesc {
+        font-size: 1.2rem;
+        color: var(--primary-text-color);
+      }
+
+      .current {
+        padding: 1.2em 0;
+        margin-bottom: 3.5em;
+      }
+
+      .details {
         display: flex;
+        flex-flow: row wrap;
         justify-content: space-between;
+        font-weight: 300;
+        color: var(--primary-text-color);
+        list-style: none;
+        padding: 0 1em;
+        margin: 0;
       }
-      .switch {
+
+      .details ha-icon {
+        height: 22px;
+        margin-right: 5px;
+        color: var(--paper-item-icon-color);
+      }
+
+      .details li {
+        flex-basis: auto;
+        width: 50%;
+      }
+
+      .details li:nth-child(2n) {
+        text-align: right;
+      }
+
+      .details li:nth-child(2n) ha-icon {
+        margin-right: 0;
+        margin-left: 8px;
+        float: right;
+      }
+
+      .deepskyforecast {
         display: flex;
-        align-items: center;
-        justify-items: center;
+        flex-flow: row wrap;
+        justify-content: space-between;
+        font-weight: 300;
+        color: var(--primary-text-color);
+        list-style: none;
+        padding: 0 1em;
+        margin-top: 1;
       }
-      .switches span {
-        padding: 0 16px;
+
+      .deepskyforecast ha-icon {
+        height: 22px;
+        margin-right: 5px;
+        color: var(--paper-item-icon-color);
+      }
+
+      .deepskyforecast li {
+        flex-basis: auto;
+        width: 100%;
+      }
+
+      .unit {
+        font-size: 0.8em;
+      }
+
+      .forecast {
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+      }
+
+      .forecast ha-icon {
+        height: 22px;
+        margin-right: 5px;
+        color: var(--paper-item-icon-color);
+      }
+
+      .forecastrow {
+        flex: 1;
+        display: block;
+        text-align: center;
+        color: var(--primary-text-color);
+        border-right: 0.1em solid #d9d9d9;
+        line-height: 2;
+        box-sizing: border-box;
+      }
+
+      .forecastrowname {
+        text-transform: uppercase;
+      }
+
+      .forecast .forecastrow:first-child {
+        margin-left: 0;
+      }
+
+      .forecast .forecastrow:nth-last-child(1) {
+        border-right: none;
+        margin-right: 0;
+      }
+
+      .value_item {
+      }
+
+      .value_item_bold {
+        font-weight: bold;
+      }
+
+      .label {
+        font-weight: bold;
+        text-align: center;
       }
     `;
   }
 }
 
-customElements.define("astroweather-card-editor", AstroWeatherCardEditor);
+customElements.define("astroweather-card", AstroWeatherCard);
