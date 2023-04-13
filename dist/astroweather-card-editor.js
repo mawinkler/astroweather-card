@@ -18,6 +18,13 @@ if (
   customElements.define("ha-switch", customElements.get("paper-toggle-button"));
 }
 
+// if (
+//   !customElements.get("ha-switch") &&
+//   customElements.get("paper-toggle-button")
+// ) {
+//   customElements.define("ha-switch", customElements.get("paper-toggle-button"));
+// }
+
 const LitElement = customElements.get("hui-masonry-view")
   ? Object.getPrototypeOf(customElements.get("hui-masonry-view"))
   : Object.getPrototypeOf(customElements.get("hui-view"));
@@ -55,6 +62,26 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.deepskydetails !== false;
   }
 
+  get _line_color_condition() {
+    return this._config.line_color_condition || "#CCFF66";
+  }
+
+  get _line_color_condition_night() {
+    return this._config.line_color_condition || "";
+  }
+
+  get _line_color_cloudless() {
+    return this._config.line_color_cloudless || "#CC3366";
+  }
+
+  get _line_color_seeing() {
+    return this._config.line_color_seeing || "#669966";
+  }
+
+  get _line_color_transparency() {
+    return this._config.line_color_transparency || "#006666";
+  }
+
   get _forecast() {
     return this._config.forecast !== false;
   }
@@ -86,8 +113,13 @@ export class AstroWeatherCardEditor extends LitElement {
     }
 
     const entities = Object.keys(this.hass.states).filter(
-      (eid) => eid.substr(0, eid.indexOf(".")) === "weather"
+      (eid) => eid.substr(0, eid.indexOf("_")) === "weather.astroweather"
     );
+    // const entities = Object.keys(this.hass.states)
+    //   .filter((entity_id) => entity_id.includes("weather.astroweather"))
+    //   .reduce((cur, key) => {
+    //     return Object.assign(cur, { [key]: entity_id[key] });
+    //   }, {});
 
     return html`
       <div class="card-config">
@@ -98,12 +130,6 @@ export class AstroWeatherCardEditor extends LitElement {
             .configValue="${"name"}"
             @value-changed="${this._valueChanged}"
           ></paper-input>
-          <!-- <paper-input
-            label="Icons location"
-            .value="${this._icons}"
-            .configValue="${"icons"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input> -->
           ${customElements.get("ha-entity-picker")
             ? html`
                 <ha-entity-picker
@@ -182,12 +208,47 @@ export class AstroWeatherCardEditor extends LitElement {
             </div> -->
           </div>
           <paper-input
-            label="Number of future forcasts"
+            label="Number of future forcasts2"
             type="number"
             min="1"
             max="32"
             value=${this._number_of_forecasts}
             .configValue="${"number_of_forecasts"}"
+            @value-changed="${this._valueChanged}"
+          ></paper-input>
+          <paper-input
+            label="Line color condition"
+            type="text"
+            value=${this._line_color_condition}
+            .configValue="${"line_color_condition"}"
+            @value-changed="${this._valueChanged}"
+          ></paper-input>
+          <paper-input
+            label="Line color condition night"
+            type="text"
+            value=${this._line_color_condition_night}
+            .configValue="${"line_color_condition_night"}"
+            @value-changed="${this._valueChanged}"
+          ></paper-input>
+          <paper-input
+            label="Line color cloudless"
+            type="text"
+            value=${this._line_color_cloudless}
+            .configValue="${"line_color_cloudless"}"
+            @value-changed="${this._valueChanged}"
+          ></paper-input>
+          <paper-input
+            label="Line color seeing"
+            type="text"
+            value=${this._line_color_seeing}
+            .configValue="${"line_color_seeing"}"
+            @value-changed="${this._valueChanged}"
+          ></paper-input>
+          <paper-input
+            label="Line color transparency"
+            type="text"
+            value=${this._line_color_transparency}
+            .configValue="${"line_color_transparency"}"
             @value-changed="${this._valueChanged}"
           ></paper-input>
         </div>
