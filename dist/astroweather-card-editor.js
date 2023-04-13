@@ -63,23 +63,23 @@ export class AstroWeatherCardEditor extends LitElement {
   }
 
   get _line_color_condition() {
-    return this._config.line_color_condition || "#CCFF66";
+    return this._config.line_color_condition || "#f07178";
   }
 
   get _line_color_condition_night() {
-    return this._config.line_color_condition || "";
+    return this._config.line_color_condition_night || "#eeffff";
   }
 
   get _line_color_cloudless() {
-    return this._config.line_color_cloudless || "#CC3366";
+    return this._config.line_color_cloudless || "#c3e88d";
   }
 
   get _line_color_seeing() {
-    return this._config.line_color_seeing || "#669966";
+    return this._config.line_color_seeing || "#ffcb6b";
   }
 
   get _line_color_transparency() {
-    return this._config.line_color_transparency || "#006666";
+    return this._config.line_color_transparency || "#82aaff";
   }
 
   get _forecast() {
