@@ -29,6 +29,16 @@ const fireEvent = (node, type, detail, options) => {
   return event;
 };
 
+// Lazy loading
+const cardHelpers = await window.loadCardHelpers();
+const entitiesCard = await cardHelpers.createCardElement({
+  type: "entities",
+  entities: [],
+}); // A valid config avoids errors
+
+// Then we make it load its editor through the static getConfigElement method
+entitiesCard.constructor.getConfigElement();
+
 function hasConfigOrEntityChanged(element, changedProps) {
   if (changedProps.has("_config")) {
     return true;
@@ -91,6 +101,9 @@ class AstroWeatherCard extends LitElement {
     if (!config.entity) {
       throw new Error("Please define an AstroWeather entity");
     }
+    if (!config.entity.startsWith("weather.astroweather")) {
+      throw new Error("Entity is not an AstroWeather entity");
+    }
     this._config = config;
   }
 
@@ -148,6 +161,7 @@ class AstroWeatherCard extends LitElement {
           .not-found {
             flex: 1;
             background-color: yellow;
+            color: black;
             padding: 8px;
           }
         </style>
