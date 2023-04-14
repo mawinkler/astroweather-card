@@ -39,6 +39,12 @@ const entitiesCard = await cardHelpers.createCardElement({
 // Then we make it load its editor through the static getConfigElement method
 entitiesCard.constructor.getConfigElement();
 
+if (!customElements.get("ha-gauge")) {
+  const cardHelpers = await window.loadCardHelpers();
+  cardHelpers.createCardElement({ type: "gauge" });
+}
+// -Lazy loading
+
 function hasConfigOrEntityChanged(element, changedProps) {
   if (changedProps.has("_config")) {
     return true;
