@@ -94,6 +94,12 @@ class AstroWeatherCard extends LitElement {
     }
     return {
       entity,
+      details: true,
+      current: true,
+      deepskydetails: true,
+      forecast: true,
+      graph: true,
+      number_of_forecasts: "7",
       line_color_condition: "#f07178",
       line_color_condition_night: "#eeffff",
       line_color_cloudless: "#c3e88d",
@@ -125,11 +131,10 @@ class AstroWeatherCard extends LitElement {
 
   updated(changedProperties) {
     if (this._config.graph !== false) {
-      if (changedProperties.has("config")) {
+      if (changedProperties.has("_config")) {
         this.drawChart();
       }
-      // if (changedProperties.has("weather")) {
-      if (changedProperties.has("config")) {
+      if (changedProperties.has("weather")) {
         this.updateChart();
       }
     }
@@ -548,7 +553,6 @@ class AstroWeatherCard extends LitElement {
     var colorCloudless = this._config.line_color_cloudless;
     var colorSeeing = this._config.line_color_seeing;
     var colorTransparency = this._config.line_color_transparency;
-    // style.getPropertyValue("--primary-text-color");
     var dividerColor = style.getPropertyValue("--divider-color");
 
     const ctx = this.renderRoot
@@ -641,7 +645,7 @@ class AstroWeatherCard extends LitElement {
       },
       options: {
         animation: false,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         layout: {
           padding: {
             bottom: 10,

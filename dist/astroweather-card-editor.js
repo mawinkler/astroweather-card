@@ -55,6 +55,14 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.deepskydetails !== false;
   }
 
+  get _forecast() {
+    return this._config.forecast !== false;
+  }
+
+  get _graph() {
+    return this._config.graph !== false;
+  }
+
   get _line_color_condition() {
     return this._config.line_color_condition || "#f07178";
   }
@@ -73,14 +81,6 @@ export class AstroWeatherCardEditor extends LitElement {
 
   get _line_color_transparency() {
     return this._config.line_color_transparency || "#82aaff";
-  }
-
-  get _forecast() {
-    return this._config.forecast !== false;
-  }
-
-  get _graph() {
-    return this._config.graph !== false;
   }
 
   get _hourly_forecast() {
@@ -201,50 +201,54 @@ export class AstroWeatherCardEditor extends LitElement {
               ><span>Show hourly forecast</span>
             </div> -->
           </div>
-          <paper-input
-            label="Number of future forcasts2"
-            type="number"
-            min="1"
-            max="32"
-            value=${this._number_of_forecasts}
-            .configValue="${"number_of_forecasts"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color condition"
-            type="text"
-            value=${this._line_color_condition}
-            .configValue="${"line_color_condition"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color condition night"
-            type="text"
-            value=${this._line_color_condition_night}
-            .configValue="${"line_color_condition_night"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color cloudless"
-            type="text"
-            value=${this._line_color_cloudless}
-            .configValue="${"line_color_cloudless"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color seeing"
-            type="text"
-            value=${this._line_color_seeing}
-            .configValue="${"line_color_seeing"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          <paper-input
-            label="Line color transparency"
-            type="text"
-            value=${this._line_color_transparency}
-            .configValue="${"line_color_transparency"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
+          ${this._graph == true || this._forecast == true
+            ? html`<paper-input
+                label="Number of future forcasts"
+                type="number"
+                min="1"
+                max="32"
+                value=${this._number_of_forecasts}
+                .configValue="${"number_of_forecasts"}"
+                @value-changed="${this._valueChanged}"
+              ></paper-input>`
+            : ""}
+          ${this._graph == true
+            ? html` <paper-input
+                  label="Line color condition"
+                  type="text"
+                  value=${this._line_color_condition}
+                  .configValue="${"line_color_condition"}"
+                  @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                  label="Line color condition night"
+                  type="text"
+                  value=${this._line_color_condition_night}
+                  .configValue="${"line_color_condition_night"}"
+                  @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                  label="Line color cloudless"
+                  type="text"
+                  value=${this._line_color_cloudless}
+                  .configValue="${"line_color_cloudless"}"
+                  @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                  label="Line color seeing"
+                  type="text"
+                  value=${this._line_color_seeing}
+                  .configValue="${"line_color_seeing"}"
+                  @value-changed="${this._valueChanged}"
+                ></paper-input>
+                <paper-input
+                  label="Line color transparency"
+                  type="text"
+                  value=${this._line_color_transparency}
+                  .configValue="${"line_color_transparency"}"
+                  @value-changed="${this._valueChanged}"
+                ></paper-input>`
+            : ""}
         </div>
       </div>
     `;
