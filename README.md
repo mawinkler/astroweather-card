@@ -1,5 +1,8 @@
 # Lovelace AstroWeather Card
 
+![GitHub release](https://img.shields.io/badge/release-v0.23.0-blue)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
+
 This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.7+`. For nautical dawn and dusk calculations the required version is `0.22.0+`.
 
 <img src="./images/astroweather-card.png" alt="AstroWeather Card" width="400"/>
@@ -12,16 +15,7 @@ Thanks for all picking this card up.
 
 ### HACS installation
 
-1. Open the community store and choose `Add custom repository` from the three dots in the upper right corner.
-2. In the bottom of the dialog add
-
-   `https://github.com/mawinkler/astroweather-card` as the Repository
-
-   and
-
-   `Lovelace` from the Category List
-3. Close the dialog
-4. Now search for `AstroWeather Card`, select it and press download in the bottom right.
+This Integration is part of the default HACS store, so go to the HACS page and search for *AstroWeather* within the Lovelace category.
 
 ### Manual Installation
 
@@ -47,25 +41,29 @@ And add a card with type `custom:astroweather-card`:
 type: custom:astroweather-card
 entity: weather.astroweather_LONGITUDE_LATITUDE
 name: AstroWeather
-forecast: true
-deepskydetails: true
-details: true
 current: true
-number_of_forecasts: '7'
+details: true
+deepskydetails: true
+forecast: true
+graph: true
+number_of_forecasts: '22'
+line_color_condition_night: '#eeffff'
+line_color_condition: '#f07178'
+line_color_cloudless: '#c3e88d'
+line_color_seeing: '#ffcb6b'
+line_color_transparency: '#82aaff'
 ```
 
 You can choose wich elements of the weather card you want to show:
-
-The 4 different rows, being:
 
 - The title and current view conditions
 - The details about the current weather
 - The deep sky forecast for today and tomorrow in plain text
 - The three hourly forecast for clouds, seeing, transparency, view conditions and temperature
+- The graphical forecast
 
-The card owns a card editor which pops up if you click on `[Edit]`.
+If you enable either the forecast or the graph you can define the number of future forecasts in 3hs steps.
 
-## ToDos
+If you enable the graphical forecast you can change the line colors as well.
 
-- HACS
-- Translations
+The card owns a card editor which pops up if you click on `[Edit]` which being in edit mode of your view.
