@@ -3,7 +3,7 @@
 ![GitHub release](https://img.shields.io/badge/release-v0.23.0-blue)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
-This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.7+`. For nautical dawn and dusk calculations the required version is `0.22.0+`.
+This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather).
 
 <img src="./images/astroweather-card.png" alt="AstroWeather Card" width="400"/>
 
