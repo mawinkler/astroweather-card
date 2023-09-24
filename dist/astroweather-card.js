@@ -554,6 +554,7 @@ class AstroWeatherCard extends LitElement {
     var colorSeeing = this._config.line_color_seeing;
     var colorTransparency = this._config.line_color_transparency;
     var dividerColor = style.getPropertyValue("--divider-color");
+    var fillLine = false;
 
     const ctx = this.renderRoot
       .querySelector("#forecastChart")
@@ -562,7 +563,7 @@ class AstroWeatherCard extends LitElement {
     Chart.defaults.color = textColor;
     Chart.defaults.scale.grid.color = dividerColor;
     Chart.defaults.elements.line.fill = false;
-    Chart.defaults.elements.line.tension = 0.3;
+    Chart.defaults.elements.line.tension = 0.4;
     Chart.defaults.elements.line.borderWidth = 1.5;
     Chart.defaults.elements.point.radius = 2;
     Chart.defaults.elements.point.hitRadius = 10;
@@ -581,6 +582,9 @@ class AstroWeatherCard extends LitElement {
     colorTransparencyGradient.addColorStop(0, colorTransparency);
     colorTransparencyGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
+    var sun_next_setting_astro = new Date(weather.attributes.sun_next_setting_astro).getHours()
+    var sun_next_rising_astro = new Date(weather.attributes.sun_next_rising_astro).getHours()
+
     this.forecastChart = new Chart(ctx, {
       type: "bar",
       data: {
@@ -592,17 +596,23 @@ class AstroWeatherCard extends LitElement {
             data: condition,
             yAxisID: "PercentageAxis",
             backgroundColor: colorConditionGradient,
-            fill: true,
-            borderWidth: 2,
+            fill: fillLine,
+            borderWidth: 4,
             borderColor: colorCondition,
             pointBorderColor: function (context) {
               var index = context.dataIndex;
               var hour = new Date(dateTime[index]).getHours();
-              return hour >= 19 || hour <= 3
+              return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
                 ? colorConditionNight
                 : colorCondition;
             },
-            pointRadius: 5,
+            pointRadius: function (context) {
+              var index = context.dataIndex;
+              var hour = new Date(dateTime[index]).getHours();
+              return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
+                ? 5
+                : 0;
+            },
             pointStyle: "star",
           },
           {
@@ -611,10 +621,10 @@ class AstroWeatherCard extends LitElement {
             data: clouds,
             yAxisID: "PercentageAxis",
             backgroundColor: colorCloudlessGradient,
-            fill: true,
+            fill: fillLine,
             borderColor: colorCloudless,
             pointBorderColor: colorCloudless,
-            pointRadius: 4,
+            pointRadius: 0,
             pointStyle: "rect",
           },
           {
@@ -623,10 +633,10 @@ class AstroWeatherCard extends LitElement {
             data: seeing,
             yAxisID: "PercentageAxis",
             backgroundColor: colorSeeingGradient,
-            fill: true,
+            fill: fillLine,
             borderColor: colorSeeing,
             pointBorderColor: colorSeeing,
-            pointRadius: 4,
+            pointRadius: 0,
             pointStyle: "triangle",
           },
           {
@@ -635,10 +645,10 @@ class AstroWeatherCard extends LitElement {
             data: transparency,
             yAxisID: "PercentageAxis",
             backgroundColor: colorTransparencyGradient,
-            fill: true,
+            fill: fillLine,
             borderColor: colorTransparency,
             pointBorderColor: colorTransparency,
-            pointRadius: 4,
+            pointRadius: 0,
             pointStyle: "circle",
           },
         ],
@@ -705,6 +715,7 @@ class AstroWeatherCard extends LitElement {
                 size: 8,
               },
               padding: 5,
+              pointStyle: "circle",
               usePointStyle: true,
             },
           },
