@@ -63,6 +63,22 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.graph !== false;
   }
 
+  get _graph_condition() {
+    return this._config.graph_condition !== false;
+  }
+
+  get _graph_cloudless() {
+    return this._config.graph_cloudless !== false;
+  }
+
+  get _graph_seeing() {
+    return this._config.graph_seeing !== false;
+  }
+
+  get _graph_transparency() {
+    return this._config.graph_transparency !== false;
+  }
+
   get _line_color_condition() {
     return this._config.line_color_condition || "#f07178";
   }
@@ -89,7 +105,7 @@ export class AstroWeatherCardEditor extends LitElement {
   }
 
   get _number_of_forecasts() {
-    return this._config.number_of_forecasts || 5;
+    return this._config.number_of_forecasts || 7;
   }
 
   firstUpdated() {
@@ -125,7 +141,7 @@ export class AstroWeatherCardEditor extends LitElement {
             @value-changed="${this._valueChanged}"
           ></paper-input>
           ${customElements.get("ha-entity-picker")
-            ? html`
+        ? html`
                 <ha-entity-picker
                   .hass="${this.hass}"
                   .value="${this._entity}"
@@ -135,7 +151,7 @@ export class AstroWeatherCardEditor extends LitElement {
                   allow-custom-entity
                 ></ha-entity-picker>
               `
-            : html`
+        : html`
                 <paper-dropdown-menu
                   label="Entity"
                   @value-changed="${this._valueChanged}"
@@ -146,8 +162,8 @@ export class AstroWeatherCardEditor extends LitElement {
                     .selected="${entities.indexOf(this._entity)}"
                   >
                     ${entities.map((entity) => {
-                      return html` <paper-item>${entity}</paper-item> `;
-                    })}
+          return html` <paper-item>${entity}</paper-item> `;
+        })}
                   </paper-listbox>
                 </paper-dropdown-menu>
               `}
@@ -202,7 +218,7 @@ export class AstroWeatherCardEditor extends LitElement {
             </div> -->
           </div>
           ${this._graph == true || this._forecast == true
-            ? html`<paper-input
+        ? html`<paper-input
                 label="Number of future forcasts"
                 type="number"
                 min="1"
@@ -211,9 +227,46 @@ export class AstroWeatherCardEditor extends LitElement {
                 .configValue="${"number_of_forecasts"}"
                 @value-changed="${this._valueChanged}"
               ></paper-input>`
-            : ""}
+        : ""}
           ${this._graph == true
-            ? html` <paper-input
+        ? html` <div class="switches">
+                  <div class="switch">
+                    <ha-switch
+                      .checked=${this._graph_condition}
+                      .configValue="${"graph_condition"}"
+                      @change="${this._valueChanged}"
+                    ></ha-switch
+                    ><span>Graph condition</span>
+                  </div>
+                  <div class="switch">
+                    <ha-switch
+                      .checked=${this._graph_cloudless}
+                      .configValue="${"graph_cloudless"}"
+                      @change="${this._valueChanged}"
+                    ></ha-switch
+                    ><span>Graph cloudless</span>
+                  </div>
+                  <div class="switch">
+                    <ha-switch
+                      .checked=${this._graph_seeing}
+                      .configValue="${"graph_seeing"}"
+                      @change="${this._valueChanged}"
+                    ></ha-switch
+                    ><span>Graph seeing</span>
+                  </div>
+                  <div class="switch">
+                    <ha-switch
+                      .checked=${this._graph_transparency}
+                      .configValue="${"graph_transparency"}"
+                      @change="${this._valueChanged}"
+                    ></ha-switch
+                    ><span>Graph transparency</span>
+                  </div>
+                </div>`
+        : ""}
+        ${this._graph_condition == true && this._graph == true
+        ? html`
+                <paper-input
                   label="Line color condition"
                   type="text"
                   value=${this._line_color_condition}
@@ -226,29 +279,38 @@ export class AstroWeatherCardEditor extends LitElement {
                   value=${this._line_color_condition_night}
                   .configValue="${"line_color_condition_night"}"
                   @value-changed="${this._valueChanged}"
-                ></paper-input>
+                ></paper-input>`
+        : ""}
+          ${this._graph_cloudless == true && this._graph == true
+        ? html`
                 <paper-input
                   label="Line color cloudless"
                   type="text"
                   value=${this._line_color_cloudless}
                   .configValue="${"line_color_cloudless"}"
                   @value-changed="${this._valueChanged}"
-                ></paper-input>
+                ></paper-input>`
+        : ""}
+          ${this._graph_seeing == true && this._graph == true
+        ? html`
                 <paper-input
                   label="Line color seeing"
                   type="text"
                   value=${this._line_color_seeing}
                   .configValue="${"line_color_seeing"}"
                   @value-changed="${this._valueChanged}"
-                ></paper-input>
-                <paper-input
+                ></paper-input>`
+        : ""}
+          ${this._graph_transparency == true && this._graph == true
+        ? html`
+                      <paper-input
                   label="Line color transparency"
                   type="text"
                   value=${this._line_color_transparency}
                   .configValue="${"line_color_transparency"}"
                   @value-changed="${this._valueChanged}"
                 ></paper-input>`
-            : ""}
+        : ""}
         </div>
       </div>
     `;
