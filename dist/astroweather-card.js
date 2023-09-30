@@ -432,7 +432,7 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:moon-new"></ha-icon>
-          Moon Phase: ${moon_next_new_moon} %
+          New Moon: ${moon_next_new_moon}
         </li>
       </ul>
     `;
