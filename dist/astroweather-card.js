@@ -237,6 +237,7 @@ class AstroWeatherCard extends LitElement {
     let sun_next_setting_astro;
     let moon_next_rising;
     let moon_next_setting;
+    let moon_next_new_moon;
 
     sun_next_rising = new Date(
       stateObj.attributes.sun_next_rising
@@ -303,6 +304,15 @@ class AstroWeatherCard extends LitElement {
     });
     moon_next_setting = new Date(
       stateObj.attributes.moon_next_setting
+    ).toLocaleTimeString(lang, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    moon_next_new_moon = new Date(
+      stateObj.attributes.moon_next_new_moon
     ).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
@@ -419,6 +429,10 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:moon-waning-gibbous"></ha-icon>
           Moon Phase: ${stateObj.attributes.moon_phase} %
+        </li>
+        <li>
+          <ha-icon icon="mdi:moon-new"></ha-icon>
+          Moon Phase: ${moon_next_new_moon} %
         </li>
       </ul>
     `;
