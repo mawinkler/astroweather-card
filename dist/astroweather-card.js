@@ -445,14 +445,17 @@ class AstroWeatherCard extends LitElement {
       <ul
         class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
       >
-        ${stateObj.attributes.deepsky_forecast_today_plain
+      ${stateObj.attributes.deepsky_forecast_today_plain
         ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
                 ${stateObj.attributes.deepsky_forecast_today_dayname}:
                 ${stateObj.attributes.deepsky_forecast_today_plain}
               </li>
-            `
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_today_desc}
+              </li>            `
         : ""}
         ${stateObj.attributes.deepsky_forecast_tomorrow_plain
         ? html`
@@ -460,6 +463,10 @@ class AstroWeatherCard extends LitElement {
                 <ha-icon icon="mdi:weather-night"></ha-icon>
                 ${stateObj.attributes.deepsky_forecast_tomorrow_dayname}:
                 ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
+              </li>
+              <li>
+                <ha-icon icon="mdi:image-text"></ha-icon>
+                ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
               </li>
             `
         : ""}
