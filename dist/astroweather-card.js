@@ -381,18 +381,15 @@ class AstroWeatherCard extends LitElement {
           ${this.getUnit("wind_speed")}
         </li>
         <li>
-          ${stateObj.attributes.prec_type == "Snow"
-        ? html` <ha-icon icon="mdi:weather-snowy"></ha-icon> `
-        : stateObj.attributes.prec_type == "Rain"
+          ${stateObj.attributes.precipitation_amount >= 0
+        ? html` <ha-icon icon="mdi:weather-cloudy"></ha-icon> `
+        : stateObj.attributes.precipitation_amount >= 0.5
           ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
-          : stateObj.attributes.prec_type == "Frzr"
-            ? html` <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon> `
-            : stateObj.attributes.prec_type == "Icep"
-              ? html` <ha-icon icon="mdi:weather-hail"></ha-icon> `
-              : stateObj.attributes.prec_type == "None"
-                ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
-                : ""}
-          Precipitation: ${stateObj.attributes.prec_type}
+          : stateObj.attributes.precipitation_amount >= 4
+            ? html` <ha-icon icon="mdi:weather-pouring"></ha-icon> `
+            : ""}
+          Precipitation: ${stateObj.attributes.precipitation_amount}
+          ${this.getUnit("precipitation")}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
@@ -861,7 +858,17 @@ class AstroWeatherCard extends LitElement {
   }
 
   getUnit(measure) {
-    return this.hass.config.unit_system[measure] || "";
+    const lengthUnit = this.hass.config.unit_system.length;
+    switch (measure) {
+      case "air_pressure":
+        return lengthUnit === "km" ? "hPa" : "inHg";
+      case "length":
+        return lengthUnit;
+      case "precipitation":
+        return lengthUnit === "km" ? "mm" : "in";
+      default:
+        return this.hass.config.unit_system.length || "";
+    }
   }
 
   _handleClick() {
