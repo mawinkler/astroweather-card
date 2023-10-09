@@ -216,13 +216,16 @@ class AstroWeatherCard extends LitElement {
   renderCurrent(stateObj) {
     this.numberElements++;
 
+    var dsd_h = Math.floor(Math.round(stateObj.attributes.deep_sky_darkness) / 3600);
+    var dsd_m = Math.round(stateObj.attributes.deep_sky_darkness) % 60;
+
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
         ${this._config.name
         ? html` <span class="title"> ${this._config.name} </span> `
         : ""}
 
-        <span class="condition"> ${stateObj.attributes.condition_plain}</span>
+        <span class="condition"> DSD Time: ${dsd_h}h ${dsd_m}min</span>
       </div>
     `;
   }
@@ -866,6 +869,10 @@ class AstroWeatherCard extends LitElement {
         return lengthUnit;
       case "precipitation":
         return lengthUnit === "km" ? "mm" : "in";
+      case "temperature":
+        return lengthUnit === "km" ? "°C" : "°F";
+      case "wind_speed":
+        return lengthUnit === "km" ? "m/s" : "mph";
       default:
         return this.hass.config.unit_system.length || "";
     }
