@@ -216,8 +216,9 @@ class AstroWeatherCard extends LitElement {
   renderCurrent(stateObj) {
     this.numberElements++;
 
-    var dsd_h = Math.floor(Math.round(stateObj.attributes.deep_sky_darkness) / 3600);
-    var dsd_m = Math.round(stateObj.attributes.deep_sky_darkness) % 60;
+    var dsd_duration = stateObj.attributes.deep_sky_darkness / 60
+    var dsd_h = Math.floor(dsd_duration / 60);
+    var dsd_m = Math.round(dsd_duration - dsd_h * 60);
 
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
@@ -442,6 +443,7 @@ class AstroWeatherCard extends LitElement {
     this.numberElements++;
 
     return html`
+      
       <ul
         class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
       >
@@ -543,6 +545,8 @@ class AstroWeatherCard extends LitElement {
     if (this.forecastChart) {
       this.forecastChart.destroy();
     }
+    // let forecast_svc
+    // this.hass.callService("weather", "get_forecast", {"entity_id": "weather.astroweather_48_31279_11_98474"}, {"response_variable": "forecast_svc"})
     var forecast = weather.attributes.forecast.slice(
       0,
       this._config.number_of_forecasts ? this._config.number_of_forecasts : 5
