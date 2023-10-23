@@ -4,6 +4,14 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
+const CARD_VERSION = "v0.31.1";
+
+console.info(
+  `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
+  'color: yellow; font-weight: bold; background: navy',
+  'color: white; font-weight: bold; background: black',
+);
+
 import { Chart, registerables } from "https://unpkg.com/chart.js@3.7.1?module";
 Chart.register(...registerables);
 
