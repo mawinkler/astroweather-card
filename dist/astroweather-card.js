@@ -633,6 +633,11 @@ class AstroWeatherCard extends LitElement {
     var sun_next_setting_astro = new Date(weather.attributes.sun_next_setting_astro).getHours()
     var sun_next_rising_astro = new Date(weather.attributes.sun_next_rising_astro).getHours()
 
+    var graphCondition = this._config.graph_condition;
+    var graphCloudless = this._config.graph_cloudless;
+    var graphSeeing = this._config.graph_seeing;
+    var graphTransparency = this._config.graph_transparency;
+
     this.forecastChart = new Chart(ctx, {
       type: "bar",
       data: {
@@ -663,7 +668,6 @@ class AstroWeatherCard extends LitElement {
             },
             pointStyle: "star",
           },
-
           {
             label: "Cloudless",
             type: "line",
@@ -794,7 +798,7 @@ class AstroWeatherCard extends LitElement {
         },
         plugins: {
           legend: {
-            display: false,
+            display: true,
             position: "bottom",
             labels: {
               boxWitdth: 10,
@@ -805,6 +809,16 @@ class AstroWeatherCard extends LitElement {
               pointStyle: "circle",
               pointStyleWidth: 1,
               usePointStyle: true,
+              filter: function (legendItem, data) {
+                return (legendItem.text == "Condition" && graphCondition) ||
+                  ((legendItem.text == "Cloudless" ||
+                    legendItem.text == "High" ||
+                    legendItem.text == "Medium" ||
+                    legendItem.text == "Low")
+                    && graphCloudless) ||
+                  (legendItem.text == "Seeing" && graphSeeing) ||
+                  (legendItem.text == "Transparency" && graphTransparency);
+              },
             },
           },
           datalabels: {
@@ -891,7 +905,7 @@ class AstroWeatherCard extends LitElement {
   }
 
   _handleClick() {
-    fireEvent(this, "hass-more-info", { entityId: this._config.entity });
+    // fireEvent(this, "hass-more-info", { entityId: this._config.entity });
   }
 
   getCardSize() {
