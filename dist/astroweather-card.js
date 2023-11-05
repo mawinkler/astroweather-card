@@ -655,16 +655,28 @@ class AstroWeatherCard extends LitElement {
             pointBorderColor: function (context) {
               var index = context.dataIndex;
               var hour = new Date(dateTime[index]).getHours();
-              return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
+              if (sun_next_setting_astro < sun_next_rising_astro) {
+                return hour >= sun_next_setting_astro && hour <= sun_next_rising_astro
+                  ? colorConditionNight
+                  : colorCondition;
+              } else {
+                return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
                 ? colorConditionNight
                 : colorCondition;
+              }
             },
             pointRadius: function (context) {
               var index = context.dataIndex;
               var hour = new Date(dateTime[index]).getHours();
-              return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
-                ? 5
-                : 0;
+              if (sun_next_setting_astro < sun_next_rising_astro) {
+                return hour >= sun_next_setting_astro && hour <= sun_next_rising_astro
+                  ? 5
+                  : 0;
+              } else {
+                return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
+                  ? 5
+                  : 0;
+              }
             },
             pointStyle: "star",
           },
