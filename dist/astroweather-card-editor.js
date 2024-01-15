@@ -11,19 +11,11 @@ const fireEvent = (node, type, detail, options) => {
   return event;
 };
 
-if (
-  !customElements.get("ha-switch") &&
-  customElements.get("paper-toggle-button")
-) {
-  customElements.define("ha-switch", customElements.get("paper-toggle-button"));
-}
-
 const LitElement = customElements.get("hui-masonry-view")
   ? Object.getPrototypeOf(customElements.get("hui-masonry-view"))
   : Object.getPrototypeOf(customElements.get("hui-view"));
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
-
 const HELPERS = window.loadCardHelpers();
 
 export class AstroWeatherCardEditor extends LitElement {
@@ -121,52 +113,26 @@ export class AstroWeatherCardEditor extends LitElement {
       return html``;
     }
 
-    const entities = Object.keys(this.hass.states).filter(
-      (eid) => eid.substr(0, eid.indexOf("_")) === "weather.astroweather"
-    );
-    // const entities = Object.keys(this.hass.states)
-    //   .filter((entity_id) => entity_id.includes("weather.astroweather"))
-    //   .reduce((cur, key) => {
-    //     return Object.assign(cur, { [key]: entity_id[key] });
-    //   }, {});
-    // domain-filter="weather"
+    const entities = Object.keys(this.hass.states).filter((e) => e.startsWith("weather.astroweather"));
 
     return html`
       <div class="card-config">
         <div>
-          <paper-input
+          <ha-textfield
             label="Name"
             .value="${this._name}"
             .configValue="${"name"}"
-            @value-changed="${this._valueChanged}"
-          ></paper-input>
-          ${customElements.get("ha-entity-picker")
-        ? html`
-                <ha-entity-picker
-                  .hass="${this.hass}"
-                  .value="${this._entity}"
-                  .configValue=${"entity"}
-                  domain-filter="weather"
-                  @change="${this._valueChanged}"
-                  allow-custom-entity
-                ></ha-entity-picker>
-              `
-        : html`
-                <paper-dropdown-menu
-                  label="Entity"
-                  @value-changed="${this._valueChanged}"
-                  .configValue="${"entity"}"
-                >
-                  <paper-listbox
-                    slot="dropdown-content"
-                    .selected="${entities.indexOf(this._entity)}"
-                  >
-                    ${entities.map((entity) => {
-          return html` <paper-item>${entity}</paper-item> `;
-        })}
-                  </paper-listbox>
-                </paper-dropdown-menu>
-              `}
+            @change="${this._valueChanged}"
+          ></ha-textfield>
+          <ha-entity-picker
+            .hass="${this.hass}"
+            .value="${this._entity}"
+            .configValue=${"entity"}
+            .includeEntities=${entities}
+            domain-filter="weather"
+            @change="${this._valueChanged}"
+            allow-custom-entity
+          ></ha-entity-picker>
           <div class="switches">
             <div class="switch">
               <ha-switch
@@ -201,11 +167,7 @@ export class AstroWeatherCardEditor extends LitElement {
               ><span>Show forecast</span>
             </div>
             <div class="switch">
-              <ha-switch
-                .checked=${this._graph}
-                .configValue="${"graph"}"
-                @change="${this._valueChanged}"
-              ></ha-switch
+              <ha-switch .checked=${this._graph} .configValue="${"graph"}" @change="${this._valueChanged}"></ha-switch
               ><span>Show graph</span>
             </div>
             <!-- <div class="switch">
@@ -218,99 +180,95 @@ export class AstroWeatherCardEditor extends LitElement {
             </div> -->
           </div>
           ${this._graph == true || this._forecast == true
-        ? html`<paper-input
+            ? html`<ha-textfield
                 label="Number of future forcasts"
                 type="number"
                 min="1"
                 max="72"
                 value=${this._number_of_forecasts}
                 .configValue="${"number_of_forecasts"}"
-                @value-changed="${this._valueChanged}"
-              ></paper-input>`
-        : ""}
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
           ${this._graph == true
-        ? html` <div class="switches">
-                  <div class="switch">
-                    <ha-switch
-                      .checked=${this._graph_condition}
-                      .configValue="${"graph_condition"}"
-                      @change="${this._valueChanged}"
-                    ></ha-switch
-                    ><span>Graph condition</span>
-                  </div>
-                  <div class="switch">
-                    <ha-switch
-                      .checked=${this._graph_cloudless}
-                      .configValue="${"graph_cloudless"}"
-                      @change="${this._valueChanged}"
-                    ></ha-switch
-                    ><span>Graph cloudless</span>
-                  </div>
-                  <div class="switch">
-                    <ha-switch
-                      .checked=${this._graph_seeing}
-                      .configValue="${"graph_seeing"}"
-                      @change="${this._valueChanged}"
-                    ></ha-switch
-                    ><span>Graph seeing</span>
-                  </div>
-                  <div class="switch">
-                    <ha-switch
-                      .checked=${this._graph_transparency}
-                      .configValue="${"graph_transparency"}"
-                      @change="${this._valueChanged}"
-                    ></ha-switch
-                    ><span>Graph transparency</span>
-                  </div>
-                </div>`
-        : ""}
-        ${this._graph_condition == true && this._graph == true
-        ? html`
-                <paper-input
+            ? html` <div class="switches">
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_condition}
+                    .configValue="${"graph_condition"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph condition</span>
+                </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_cloudless}
+                    .configValue="${"graph_cloudless"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph cloudless</span>
+                </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_seeing}
+                    .configValue="${"graph_seeing"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph seeing</span>
+                </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_transparency}
+                    .configValue="${"graph_transparency"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph transparency</span>
+                </div>
+              </div>`
+            : ""}
+          ${this._graph_condition == true && this._graph == true
+            ? html` <ha-textfield
                   label="Line color condition"
                   type="text"
                   value=${this._line_color_condition}
                   .configValue="${"line_color_condition"}"
-                  @value-changed="${this._valueChanged}"
-                ></paper-input>
-                <paper-input
+                  @change="${this._valueChanged}"
+                ></ha-textfield>
+                <ha-textfield
                   label="Line color condition night"
                   type="text"
                   value=${this._line_color_condition_night}
                   .configValue="${"line_color_condition_night"}"
-                  @value-changed="${this._valueChanged}"
-                ></paper-input>`
-        : ""}
+                  @change="${this._valueChanged}"
+                ></ha-textfield>`
+            : ""}
           ${this._graph_cloudless == true && this._graph == true
-        ? html`
-                <paper-input
-                  label="Line color cloudless"
-                  type="text"
-                  value=${this._line_color_cloudless}
-                  .configValue="${"line_color_cloudless"}"
-                  @value-changed="${this._valueChanged}"
-                ></paper-input>`
-        : ""}
+            ? html` <ha-textfield
+                label="Line color cloudless"
+                type="text"
+                value=${this._line_color_cloudless}
+                .configValue="${"line_color_cloudless"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
           ${this._graph_seeing == true && this._graph == true
-        ? html`
-                <paper-input
-                  label="Line color seeing"
-                  type="text"
-                  value=${this._line_color_seeing}
-                  .configValue="${"line_color_seeing"}"
-                  @value-changed="${this._valueChanged}"
-                ></paper-input>`
-        : ""}
+            ? html` <ha-textfield
+                label="Line color seeing"
+                type="text"
+                value=${this._line_color_seeing}
+                .configValue="${"line_color_seeing"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
           ${this._graph_transparency == true && this._graph == true
-        ? html`
-                      <paper-input
-                  label="Line color transparency"
-                  type="text"
-                  value=${this._line_color_transparency}
-                  .configValue="${"line_color_transparency"}"
-                  @value-changed="${this._valueChanged}"
-                ></paper-input>`
-        : ""}
+            ? html` <ha-textfield
+                label="Line color transparency"
+                type="text"
+                value=${this._line_color_transparency}
+                .configValue="${"line_color_transparency"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
         </div>
       </div>
     `;
@@ -330,8 +288,7 @@ export class AstroWeatherCardEditor extends LitElement {
       } else {
         this._config = {
           ...this._config,
-          [target.configValue]:
-            target.checked !== undefined ? target.checked : target.value,
+          [target.configValue]: target.checked !== undefined ? target.checked : target.value,
         };
       }
     }
@@ -352,6 +309,9 @@ export class AstroWeatherCardEditor extends LitElement {
       }
       .switches span {
         padding: 0 16px;
+      }
+      ha-textfield {
+        display: block;
       }
     `;
   }

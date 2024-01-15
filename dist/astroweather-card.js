@@ -4,12 +4,12 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
-const CARD_VERSION = "v0.31.2";
+const CARD_VERSION = "v0.42.1";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
-  'color: yellow; font-weight: bold; background: navy',
-  'color: white; font-weight: bold; background: black',
+  "color: yellow; font-weight: bold; background: navy",
+  "color: white; font-weight: bold; background: black"
 );
 
 import { Chart, registerables } from "https://unpkg.com/chart.js@3.7.1?module";
@@ -61,8 +61,7 @@ function hasConfigOrEntityChanged(element, changedProps) {
   const oldHass = changedProps.get("hass");
   if (oldHass) {
     return (
-      oldHass.states[element._config.entity] !==
-      element.hass.states[element._config.entity] ||
+      oldHass.states[element._config.entity] !== element.hass.states[element._config.entity] ||
       oldHass.states["sun.sun"] !== element.hass.states["sun.sun"]
     );
   }
@@ -92,13 +91,9 @@ class AstroWeatherCard extends LitElement {
     // }
     // return { entity };
     let stubConfig = {};
-    let entity = unusedEntities.find(
-      (eid) => eid.split("_")[0] === "weather.astroweather"
-    );
+    let entity = unusedEntities.find((eid) => eid.split("_")[0] === "weather.astroweather");
     if (!entity) {
-      entity = allEntities.find(
-        (eid) => eid.split("_")[0] === "weather.astroweather"
-      );
+      entity = allEntities.find((eid) => eid.split("_")[0] === "weather.astroweather");
     }
     return {
       entity,
@@ -176,9 +171,7 @@ class AstroWeatherCard extends LitElement {
           }
         </style>
         <ha-card>
-          <div class="not-found">
-            Entity not available: ${this._config.entity}
-          </div>
+          <div class="not-found">Entity not available: ${this._config.entity}</div>
         </ha-card>
       `;
     }
@@ -193,9 +186,7 @@ class AstroWeatherCard extends LitElement {
           }
         </style>
         <ha-card>
-          <div class="not-found">
-            Entity is not an AstroWeather entity: ${this._config.entity}
-          </div>
+          <div class="not-found">Entity is not an AstroWeather entity: ${this._config.entity}</div>
         </ha-card>
       `;
     }
@@ -203,20 +194,14 @@ class AstroWeatherCard extends LitElement {
     return html`
       <ha-card @click="${this._handleClick}">
         ${this._config.current !== false ? this.renderCurrent(stateObj) : ""}
-        ${this._config.details !== false
-        ? this.renderDetails(stateObj, lang)
-        : ""}
-        ${this._config.deepskydetails !== false
-        ? this.renderDeepSkyForecast(stateObj, lang)
-        : ""}
-        ${this._config.forecast !== false
-        ? this.renderForecast(stateObj.attributes.forecast, lang)
-        : ""}
+        ${this._config.details !== false ? this.renderDetails(stateObj, lang) : ""}
+        ${this._config.deepskydetails !== false ? this.renderDeepSkyForecast(stateObj, lang) : ""}
+        ${this._config.forecast !== false ? this.renderForecast(stateObj.attributes.forecast, lang) : ""}
         ${this._config.graph !== false
-        ? html`<div class="chart-container">
+          ? html`<div class="chart-container">
               <canvas id="forecastChart"></canvas>
             </div>`
-        : ""}
+          : ""}
       </ha-card>
     `;
   }
@@ -224,15 +209,13 @@ class AstroWeatherCard extends LitElement {
   renderCurrent(stateObj) {
     this.numberElements++;
 
-    var dsd_duration = stateObj.attributes.deep_sky_darkness / 60
+    var dsd_duration = stateObj.attributes.deep_sky_darkness / 60;
     var dsd_h = Math.floor(dsd_duration / 60);
     var dsd_m = Math.round(dsd_duration - dsd_h * 60);
 
     return html`
       <div class="current ${this.numberElements > 1 ? "spacer" : ""}">
-        ${this._config.name
-        ? html` <span class="title"> ${this._config.name} </span> `
-        : ""}
+        ${this._config.name ? html` <span class="title"> ${this._config.name} </span> ` : ""}
 
         <span class="condition"> DSD Time: ${dsd_h}h ${dsd_m}min</span>
       </div>
@@ -253,94 +236,72 @@ class AstroWeatherCard extends LitElement {
     let moon_next_full_moon;
     let local_time;
 
-    sun_next_rising = new Date(
-      stateObj.attributes.sun_next_rising
-    ).toLocaleTimeString(lang, {
+    sun_next_rising = new Date(stateObj.attributes.sun_next_rising).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    sun_next_setting = new Date(
-      stateObj.attributes.sun_next_setting
-    ).toLocaleTimeString(lang, {
+    sun_next_setting = new Date(stateObj.attributes.sun_next_setting).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    sun_next_rising_nautical = new Date(
-      stateObj.attributes.sun_next_rising_nautical
-    ).toLocaleTimeString(lang, {
+    sun_next_rising_nautical = new Date(stateObj.attributes.sun_next_rising_nautical).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    sun_next_setting_nautical = new Date(
-      stateObj.attributes.sun_next_setting_nautical
-    ).toLocaleTimeString(lang, {
+    sun_next_setting_nautical = new Date(stateObj.attributes.sun_next_setting_nautical).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    sun_next_rising_astro = new Date(
-      stateObj.attributes.sun_next_rising_astro
-    ).toLocaleTimeString(lang, {
+    sun_next_rising_astro = new Date(stateObj.attributes.sun_next_rising_astro).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    sun_next_setting_astro = new Date(
-      stateObj.attributes.sun_next_setting_astro
-    ).toLocaleTimeString(lang, {
+    sun_next_setting_astro = new Date(stateObj.attributes.sun_next_setting_astro).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    moon_next_rising = new Date(
-      stateObj.attributes.moon_next_rising
-    ).toLocaleTimeString(lang, {
+    moon_next_rising = new Date(stateObj.attributes.moon_next_rising).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    moon_next_setting = new Date(
-      stateObj.attributes.moon_next_setting
-    ).toLocaleTimeString(lang, {
+    moon_next_setting = new Date(stateObj.attributes.moon_next_setting).toLocaleTimeString(lang, {
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    moon_next_new_moon = new Date(
-      stateObj.attributes.moon_next_new_moon
-    ).toLocaleDateString(lang, {
+    moon_next_new_moon = new Date(stateObj.attributes.moon_next_new_moon).toLocaleDateString(lang, {
       month: "2-digit",
       day: "2-digit",
     });
-    moon_next_full_moon = new Date(
-      stateObj.attributes.moon_next_full_moon
-    ).toLocaleDateString(lang, {
+    moon_next_full_moon = new Date(stateObj.attributes.moon_next_full_moon).toLocaleDateString(lang, {
       month: "2-digit",
       day: "2-digit",
     });
-    let diff = (new Date()).getTimezoneOffset();
-    local_time = new Date(Date.now() + 
-      stateObj.attributes.time_shift * 1000 + diff * 60000
-    ).toLocaleTimeString(lang, {
+    let diff = new Date().getTimezoneOffset();
+    local_time = new Date(Date.now() + stateObj.attributes.time_shift * 1000 + diff * 60000).toLocaleTimeString(lang, {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -352,46 +313,23 @@ class AstroWeatherCard extends LitElement {
       <ul class="details ${this.numberElements > 1 ? "spacer" : ""}">
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
-          <b
-            >Condition: ${stateObj.attributes.condition_percentage}<span
-              class="unit"
-            >
-              %
-            </span></b
-          >
+          <b>Condition: ${stateObj.attributes.condition_percentage}<span class="unit"> % </span></b>
         </li>
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
-          <b
-            >Cloudless: ${stateObj.attributes.cloudless_percentage}<span
-              class="unit"
-            >
-              %
-            </span></b
-          >
+          <b>Cloudless: ${stateObj.attributes.cloudless_percentage}<span class="unit"> % </span></b>
         </li>
         <li>
           <ha-icon icon="mdi:waves"></ha-icon>
-          <b
-            >Seeing: ${stateObj.attributes.seeing_percentage}<span class="unit">
-              %
-            </span></b
-          >
+          <b>Seeing: ${stateObj.attributes.seeing_percentage}<span class="unit"> % </span></b>
         </li>
         <li>
           <ha-icon icon="mdi:safety-goggles"></ha-icon>
-          <b
-            >Transparency: ${stateObj.attributes.transparency_percentage}<span
-              class="unit"
-            >
-              %
-            </span></b
-          >
+          <b>Transparency: ${stateObj.attributes.transparency_percentage}<span class="unit"> % </span></b>
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
-          Temperature: ${stateObj.attributes.temperature}
-          ${this.getUnit("temperature")}
+          Temperature: ${stateObj.attributes.temperature} ${this.getUnit("temperature")}
         </li>
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
@@ -401,20 +339,19 @@ class AstroWeatherCard extends LitElement {
           <ha-icon icon="mdi:windsock"></ha-icon>
           Wind: ${stateObj.attributes.wind_bearing}
           ${this.getUnit("wind_speed") == "m/s"
-        ? stateObj.attributes.wind_speed
-        : Math.round(stateObj.attributes.wind_speed * 2.23694)}
+            ? stateObj.attributes.wind_speed
+            : Math.round(stateObj.attributes.wind_speed * 2.23694)}
           ${this.getUnit("wind_speed")}
         </li>
         <li>
           ${stateObj.attributes.precipitation_amount >= 0
-        ? html` <ha-icon icon="mdi:weather-cloudy"></ha-icon> `
-        : stateObj.attributes.precipitation_amount >= 0.5
-          ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
-          : stateObj.attributes.precipitation_amount >= 4
+            ? html` <ha-icon icon="mdi:weather-cloudy"></ha-icon> `
+            : stateObj.attributes.precipitation_amount >= 0.5
+            ? html` <ha-icon icon="mdi:weather-rainy"></ha-icon> `
+            : stateObj.attributes.precipitation_amount >= 4
             ? html` <ha-icon icon="mdi:weather-pouring"></ha-icon> `
             : ""}
-          Precipitation: ${stateObj.attributes.precipitation_amount}
-          ${this.getUnit("precipitation")}
+          Precipitation: ${stateObj.attributes.precipitation_amount} ${this.getUnit("precipitation")}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
@@ -472,12 +409,9 @@ class AstroWeatherCard extends LitElement {
     this.numberElements++;
 
     return html`
-      
-      <ul
-        class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}"
-      >
-      ${stateObj.attributes.deepsky_forecast_today_plain
-        ? html`
+      <ul class="deepskyforecast clear ${this.numberElements > 1 ? "spacer" : ""}">
+        ${stateObj.attributes.deepsky_forecast_today_plain
+          ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
                 ${stateObj.attributes.deepsky_forecast_today_dayname}:
@@ -486,10 +420,11 @@ class AstroWeatherCard extends LitElement {
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
                 ${stateObj.attributes.deepsky_forecast_today_desc}
-              </li>            `
-        : ""}
+              </li>
+            `
+          : ""}
         ${stateObj.attributes.deepsky_forecast_tomorrow_plain
-        ? html`
+          ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
                 ${stateObj.attributes.deepsky_forecast_tomorrow_dayname}:
@@ -500,7 +435,7 @@ class AstroWeatherCard extends LitElement {
                 ${stateObj.attributes.deepsky_forecast_tomorrow_desc}
               </li>
             `
-        : ""}
+          : ""}
       </ul>
     `;
   }
@@ -522,35 +457,24 @@ class AstroWeatherCard extends LitElement {
           <ha-icon icon="mdi:hand-pointing-up"></ha-icon><br />
           <ha-icon icon="mdi:thermometer"></ha-icon>
         </div>
-        ${forecast
-        .slice(
-          0,
-          this._config.number_of_forecasts
-            ? this._config.number_of_forecasts
-            : 5
-        )
-        .map(
+        ${forecast.slice(0, this._config.number_of_forecasts ? this._config.number_of_forecasts : 5).map(
           (daily) => html`
-              <div class="forecastrow">
-                <div class="forecastrowname">
-                  ${new Date(daily.datetime).toLocaleTimeString(lang, {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          })}
-                  <div class="value_item_bold">${daily.condition} %</div>
-                  <div class="value_item">${daily.cloudless_percentage} %</div>
-                  <div class="value_item">${daily.seeing_percentage} %</div>
-                  <div class="value_item">
-                    ${daily.transparency_percentage} %
-                  </div>
-                  <div class="value_item">${daily.lifted_index} °</div>
-                  <div class="value_item">
-                    ${daily.temperature} ${this.getUnit("temperature")}
-                  </div>
-                </div>
+            <div class="forecastrow">
+              <div class="forecastrowname">
+                ${new Date(daily.datetime).toLocaleTimeString(lang, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })}
+                <div class="value_item_bold">${daily.condition} %</div>
+                <div class="value_item">${daily.cloudless_percentage} %</div>
+                <div class="value_item">${daily.seeing_percentage} %</div>
+                <div class="value_item">${daily.transparency_percentage} %</div>
+                <div class="value_item">${daily.lifted_index} °</div>
+                <div class="value_item">${daily.temperature} ${this.getUnit("temperature")}</div>
               </div>
-            `
+            </div>
+          `
         )}
       </div>
     `;
@@ -625,9 +549,7 @@ class AstroWeatherCard extends LitElement {
     var dividerColor = style.getPropertyValue("--divider-color");
     var fillLine = false;
 
-    const ctx = this.renderRoot
-      .querySelector("#forecastChart")
-      .getContext("2d");
+    const ctx = this.renderRoot.querySelector("#forecastChart").getContext("2d");
 
     Chart.defaults.color = textColor;
     Chart.defaults.scale.grid.color = dividerColor;
@@ -651,8 +573,8 @@ class AstroWeatherCard extends LitElement {
     colorTransparencyGradient.addColorStop(0, colorTransparency);
     colorTransparencyGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-    var sun_next_setting_astro = new Date(weather.attributes.sun_next_setting_astro).getHours()
-    var sun_next_rising_astro = new Date(weather.attributes.sun_next_rising_astro).getHours()
+    var sun_next_setting_astro = new Date(weather.attributes.sun_next_setting_astro).getHours();
+    var sun_next_rising_astro = new Date(weather.attributes.sun_next_rising_astro).getHours();
 
     var graphCondition = this._config.graph_condition;
     var graphCloudless = this._config.graph_cloudless;
@@ -682,21 +604,17 @@ class AstroWeatherCard extends LitElement {
                   : colorCondition;
               } else {
                 return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
-                ? colorConditionNight
-                : colorCondition;
+                  ? colorConditionNight
+                  : colorCondition;
               }
             },
             pointRadius: function (context) {
               var index = context.dataIndex;
               var hour = new Date(dateTime[index]).getHours();
               if (sun_next_setting_astro < sun_next_rising_astro) {
-                return hour >= sun_next_setting_astro && hour <= sun_next_rising_astro
-                  ? 5
-                  : 0;
+                return hour >= sun_next_setting_astro && hour <= sun_next_rising_astro ? 5 : 0;
               } else {
-                return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro
-                  ? 5
-                  : 0;
+                return hour >= sun_next_setting_astro || hour <= sun_next_rising_astro ? 5 : 0;
               }
             },
             pointStyle: "star",
@@ -843,14 +761,16 @@ class AstroWeatherCard extends LitElement {
               pointStyleWidth: 1,
               usePointStyle: true,
               filter: function (legendItem, data) {
-                return (legendItem.text == "Condition" && graphCondition) ||
+                return (
+                  (legendItem.text == "Condition" && graphCondition) ||
                   ((legendItem.text == "Cloudless" ||
                     legendItem.text == "High" ||
                     legendItem.text == "Medium" ||
-                    legendItem.text == "Low")
-                    && graphCloudless) ||
+                    legendItem.text == "Low") &&
+                    graphCloudless) ||
                   (legendItem.text == "Seeing" && graphSeeing) ||
-                  (legendItem.text == "Transparency" && graphTransparency);
+                  (legendItem.text == "Transparency" && graphTransparency)
+                );
               },
             },
           },
