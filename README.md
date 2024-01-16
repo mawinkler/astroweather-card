@@ -42,22 +42,24 @@ And add a card with type `custom:astroweather-card`:
 ```yaml
 type: custom:astroweather-card
 entity: weather.astroweather_LONGITUDE_LATITUDE
-name: AstroWeather
+name: Backyard
 current: true
 details: true
 deepskydetails: true
 forecast: false
 graph: true
-number_of_forecasts: '48'
 line_color_condition_night: '#eeffff'
 line_color_condition: '#f07178'
 line_color_cloudless: '#c3e88d'
 line_color_seeing: '#ffcb6b'
 line_color_transparency: '#82aaff'
+number_of_forecasts: '48'
 graph_cloudless: true
 graph_seeing: true
-graph_transparency: true
+graph_transparency: false
 graph_condition: true
+tap_action:
+  action: none
 ```
 
 You can choose wich elements of the weather card you want to show:
@@ -73,17 +75,12 @@ If you enable either the forecast or the graph you can define the number of futu
 ```yaml
 type: custom:astroweather-card
 entity: weather.astroweather_LONGITUDE_LATITUDE
-name: AstroWeather
+name: Backyard
 current: false
 details: false
 deepskydetails: false
 forecast: true
 graph: false
-line_color_condition_night: '#eeffff'
-line_color_condition: '#f07178'
-line_color_cloudless: '#c3e88d'
-line_color_seeing: '#ffcb6b'
-line_color_transparency: '#82aaff'
 number_of_forecasts: '8'
 ```
 
