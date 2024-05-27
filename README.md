@@ -1,13 +1,13 @@
 # Lovelace AstroWeather Card
 
-![GitHub release](https://img.shields.io/badge/release-v0.42.1-blue)
+![GitHub release](https://img.shields.io/badge/release-v0.50.0-blue)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather).
 
 <img src="./images/astroweather-card.png" alt="AstroWeather Card" width="400"/>
 
-The percentages that are calculated for the clouds, seeing and transparency are to be read like 100% is perfect, 0% is bad. This also means, that a percentage of e.g. 87% for cloud does stand for a sky being nearly cloud free ;-).
+The percentages that are calculated and graphed are to be read like 100% is perfect, 0% is bad. This also means, that a percentage of e.g. 87% for cloud does stand for a sky being nearly cloud free ;-).
 
 Thanks for all picking this card up.
 
@@ -41,7 +41,7 @@ And add a card with type `custom:astroweather-card`:
 
 ```yaml
 type: custom:astroweather-card
-entity: weather.astroweather_LONGITUDE_LATITUDE
+entity: weather.astroweather_backyard
 name: Backyard
 current: true
 details: true
@@ -53,11 +53,14 @@ line_color_condition: '#f07178'
 line_color_cloudless: '#c3e88d'
 line_color_seeing: '#ffcb6b'
 line_color_transparency: '#82aaff'
+line_color_calm: '#ff5370'
 number_of_forecasts: '48'
 graph_cloudless: true
-graph_seeing: true
+graph_seeing: false
 graph_transparency: false
 graph_condition: true
+graph_calm: false
+graph_li: false
 tap_action:
   action: none
 ```

@@ -31,10 +31,6 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.entity || "";
   }
 
-  get _name() {
-    return this._config.name || "";
-  }
-
   get _current() {
     return this._config.current !== false;
   }
@@ -71,6 +67,14 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.graph_transparency !== false;
   }
 
+  get _graph_calm() {
+    return this._config.graph_calm !== false;
+  }
+
+  get _graph_li() {
+    return this._config.graph_li !== false;
+  }
+
   get _line_color_condition() {
     return this._config.line_color_condition || "#f07178";
   }
@@ -91,13 +95,21 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.line_color_transparency || "#82aaff";
   }
 
+  get _line_color_calm() {
+    return this._config.line_color_calm || "#ff5370";
+  }
+
+  get _line_color_li() {
+    return this._config.line_color_li || "#89ddff";
+  }
+
   get _hourly_forecast() {
     return true;
     // return this._config.hourly_forecast !== false;
   }
 
   get _number_of_forecasts() {
-    return this._config.number_of_forecasts || 7;
+    return this._config.number_of_forecasts || 8;
   }
 
   firstUpdated() {
@@ -118,12 +130,6 @@ export class AstroWeatherCardEditor extends LitElement {
     return html`
       <div class="card-config">
         <div>
-          <ha-textfield
-            label="Name"
-            .value="${this._name}"
-            .configValue="${"name"}"
-            @change="${this._valueChanged}"
-          ></ha-textfield>
           <ha-entity-picker
             .hass="${this.hass}"
             .value="${this._entity}"
@@ -180,7 +186,7 @@ export class AstroWeatherCardEditor extends LitElement {
             </div> -->
           </div>
           ${this._graph == true || this._forecast == true
-            ? html`<ha-textfield
+        ? html`<ha-textfield
                 label="Number of future forcasts"
                 type="number"
                 min="1"
@@ -189,9 +195,9 @@ export class AstroWeatherCardEditor extends LitElement {
                 .configValue="${"number_of_forecasts"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-            : ""}
+        : ""}
           ${this._graph == true
-            ? html` <div class="switches">
+        ? html` <div class="switches">
                 <div class="switch">
                   <ha-switch
                     .checked=${this._graph_condition}
@@ -224,10 +230,26 @@ export class AstroWeatherCardEditor extends LitElement {
                   ></ha-switch
                   ><span>Graph transparency</span>
                 </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_calm}
+                    .configValue="${"graph_calm"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph calmness</span>
+                </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_li}
+                    .configValue="${"graph_li"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph lifted index</span>
+                </div>
               </div>`
-            : ""}
+        : ""}
           ${this._graph_condition == true && this._graph == true
-            ? html` <ha-textfield
+        ? html` <ha-textfield
                   label="Line color condition"
                   type="text"
                   value=${this._line_color_condition}
@@ -241,35 +263,53 @@ export class AstroWeatherCardEditor extends LitElement {
                   .configValue="${"line_color_condition_night"}"
                   @change="${this._valueChanged}"
                 ></ha-textfield>`
-            : ""}
+        : ""}
           ${this._graph_cloudless == true && this._graph == true
-            ? html` <ha-textfield
+        ? html` <ha-textfield
                 label="Line color cloudless"
                 type="text"
                 value=${this._line_color_cloudless}
                 .configValue="${"line_color_cloudless"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-            : ""}
+        : ""}
           ${this._graph_seeing == true && this._graph == true
-            ? html` <ha-textfield
+        ? html` <ha-textfield
                 label="Line color seeing"
                 type="text"
                 value=${this._line_color_seeing}
                 .configValue="${"line_color_seeing"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-            : ""}
+        : ""}
           ${this._graph_transparency == true && this._graph == true
-            ? html` <ha-textfield
+        ? html` <ha-textfield
                 label="Line color transparency"
                 type="text"
                 value=${this._line_color_transparency}
                 .configValue="${"line_color_transparency"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-            : ""}
-        </div>
+        : ""}
+          ${this._graph_calm == true && this._graph == true
+        ? html` <ha-textfield
+                label="Line color calmness"
+                type="text"
+                value=${this._line_color_calm}
+                .configValue="${"line_color_calm"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+        : ""}
+            ${this._graph_li == true && this._graph == true
+        ? html` <ha-textfield
+                  label="Line color lifted index"
+                  type="text"
+                  value=${this._line_color_li}
+                  .configValue="${"line_color_li"}"
+                  @change="${this._valueChanged}"
+                ></ha-textfield>`
+        : ""}
+            </div>
       </div>
     `;
   }
@@ -301,8 +341,11 @@ export class AstroWeatherCardEditor extends LitElement {
         margin: 8px 0;
         display: flex;
         justify-content: space-between;
+        flex-direction: row;
+        display: block;
       }
       .switch {
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         justify-items: center;
