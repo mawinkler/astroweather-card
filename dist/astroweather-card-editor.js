@@ -75,6 +75,10 @@ export class AstroWeatherCardEditor extends LitElement {
     return this._config.graph_li !== false;
   }
 
+  get _graph_precip() {
+    return this._config.graph_precip !== false;
+  }
+
   get _line_color_condition() {
     return this._config.line_color_condition || "#f07178";
   }
@@ -101,6 +105,10 @@ export class AstroWeatherCardEditor extends LitElement {
 
   get _line_color_li() {
     return this._config.line_color_li || "#89ddff";
+  }
+
+  get _line_color_precip() {
+    return this._config.line_color_precip || "#82aaff";
   }
 
   get _hourly_forecast() {
@@ -246,6 +254,14 @@ export class AstroWeatherCardEditor extends LitElement {
                   ></ha-switch
                   ><span>Graph lifted index</span>
                 </div>
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_precip}
+                    .configValue="${"graph_precip"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph precipitation</span>
+                </div>
               </div>`
         : ""}
           ${this._graph_condition == true && this._graph == true
@@ -309,7 +325,16 @@ export class AstroWeatherCardEditor extends LitElement {
                   @change="${this._valueChanged}"
                 ></ha-textfield>`
         : ""}
-            </div>
+        ${this._graph_precip == true && this._graph == true
+          ? html` <ha-textfield
+                    label="Line color precipitation"
+                    type="text"
+                    value=${this._line_color_precip}
+                    .configValue="${"line_color_precip"}"
+                    @change="${this._valueChanged}"
+                  ></ha-textfield>`
+          : ""}
+              </div>
       </div>
     `;
   }
