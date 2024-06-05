@@ -133,7 +133,9 @@ export class AstroWeatherCardEditor extends LitElement {
       return html``;
     }
 
-    const entities = Object.keys(this.hass.states).filter((e) => e.startsWith("weather.astroweather"));
+    const entities = Object.keys(this.hass.states).filter((e) =>
+      e.startsWith("weather.astroweather")
+    );
 
     return html`
       <div class="card-config">
@@ -181,7 +183,11 @@ export class AstroWeatherCardEditor extends LitElement {
               ><span>Show forecast</span>
             </div>
             <div class="switch">
-              <ha-switch .checked=${this._graph} .configValue="${"graph"}" @change="${this._valueChanged}"></ha-switch
+              <ha-switch
+                .checked=${this._graph}
+                .configValue="${"graph"}"
+                @change="${this._valueChanged}"
+              ></ha-switch
               ><span>Show graph</span>
             </div>
             <!-- <div class="switch">
@@ -194,7 +200,7 @@ export class AstroWeatherCardEditor extends LitElement {
             </div> -->
           </div>
           ${this._graph == true || this._forecast == true
-        ? html`<ha-textfield
+            ? html`<ha-textfield
                 label="Number of future forcasts"
                 type="number"
                 min="1"
@@ -203,9 +209,9 @@ export class AstroWeatherCardEditor extends LitElement {
                 .configValue="${"number_of_forecasts"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-        : ""}
+            : ""}
           ${this._graph == true
-        ? html` <div class="switches">
+            ? html` <div class="switches">
                 <div class="switch">
                   <ha-switch
                     .checked=${this._graph_condition}
@@ -263,9 +269,9 @@ export class AstroWeatherCardEditor extends LitElement {
                   ><span>Graph precipitation</span>
                 </div>
               </div>`
-        : ""}
+            : ""}
           ${this._graph_condition == true && this._graph == true
-        ? html` <ha-textfield
+            ? html` <ha-textfield
                   label="Line color condition"
                   type="text"
                   value=${this._line_color_condition}
@@ -279,62 +285,62 @@ export class AstroWeatherCardEditor extends LitElement {
                   .configValue="${"line_color_condition_night"}"
                   @change="${this._valueChanged}"
                 ></ha-textfield>`
-        : ""}
+            : ""}
           ${this._graph_cloudless == true && this._graph == true
-        ? html` <ha-textfield
+            ? html` <ha-textfield
                 label="Line color cloudless"
                 type="text"
                 value=${this._line_color_cloudless}
                 .configValue="${"line_color_cloudless"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-        : ""}
+            : ""}
           ${this._graph_seeing == true && this._graph == true
-        ? html` <ha-textfield
+            ? html` <ha-textfield
                 label="Line color seeing"
                 type="text"
                 value=${this._line_color_seeing}
                 .configValue="${"line_color_seeing"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-        : ""}
+            : ""}
           ${this._graph_transparency == true && this._graph == true
-        ? html` <ha-textfield
+            ? html` <ha-textfield
                 label="Line color transparency"
                 type="text"
                 value=${this._line_color_transparency}
                 .configValue="${"line_color_transparency"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-        : ""}
+            : ""}
           ${this._graph_calm == true && this._graph == true
-        ? html` <ha-textfield
+            ? html` <ha-textfield
                 label="Line color calmness"
                 type="text"
                 value=${this._line_color_calm}
                 .configValue="${"line_color_calm"}"
                 @change="${this._valueChanged}"
               ></ha-textfield>`
-        : ""}
-            ${this._graph_li == true && this._graph == true
-        ? html` <ha-textfield
-                  label="Line color lifted index"
-                  type="text"
-                  value=${this._line_color_li}
-                  .configValue="${"line_color_li"}"
-                  @change="${this._valueChanged}"
-                ></ha-textfield>`
-        : ""}
-        ${this._graph_precip == true && this._graph == true
-          ? html` <ha-textfield
-                    label="Line color precipitation"
-                    type="text"
-                    value=${this._line_color_precip}
-                    .configValue="${"line_color_precip"}"
-                    @change="${this._valueChanged}"
-                  ></ha-textfield>`
-          : ""}
-              </div>
+            : ""}
+          ${this._graph_li == true && this._graph == true
+            ? html` <ha-textfield
+                label="Line color lifted index"
+                type="text"
+                value=${this._line_color_li}
+                .configValue="${"line_color_li"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
+          ${this._graph_precip == true && this._graph == true
+            ? html` <ha-textfield
+                label="Line color precipitation"
+                type="text"
+                value=${this._line_color_precip}
+                .configValue="${"line_color_precip"}"
+                @change="${this._valueChanged}"
+              ></ha-textfield>`
+            : ""}
+        </div>
       </div>
     `;
   }
@@ -353,7 +359,8 @@ export class AstroWeatherCardEditor extends LitElement {
       } else {
         this._config = {
           ...this._config,
-          [target.configValue]: target.checked !== undefined ? target.checked : target.value,
+          [target.configValue]:
+            target.checked !== undefined ? target.checked : target.value,
         };
       }
     }
