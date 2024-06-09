@@ -1,6 +1,6 @@
 # Lovelace AstroWeather Card
 
-![GitHub release](https://img.shields.io/badge/release-v0.50.2-blue)
+![GitHub release](https://img.shields.io/badge/release-v0.50.4-blue)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather).

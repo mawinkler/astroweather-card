@@ -4,7 +4,7 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
-const CARD_VERSION = "v0.50.2";
+const CARD_VERSION = "v0.50.4";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
@@ -599,7 +599,16 @@ class AstroWeatherCard extends LitElement {
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
-                <b>${stateObj.attributes.deepsky_forecast_today_desc}</b>
+                <b
+                  >${stateObj.attributes.deepsky_forecast_today_desc}
+                  ${stateObj.attributes
+                    .deepsky_forecast_today_precipitation_amount6 >= 0
+                    ? html`, Precip:
+                      ${stateObj.attributes
+                        .deepsky_forecast_today_precipitation_amount6}
+                      ${this.getUnit("precipitation")}`
+                    : ""}
+                </b>
               </li>
             `
           : ""}
@@ -612,7 +621,16 @@ class AstroWeatherCard extends LitElement {
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
-                <b>${stateObj.attributes.deepsky_forecast_tomorrow_desc}</b>
+                <b
+                  >${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+                  ${stateObj.attributes
+                    .deepsky_forecast_tomorrow_precipitation_amount6 >= 0
+                    ? html`, Precip:
+                      ${stateObj.attributes
+                        .deepsky_forecast_tomorrow_precipitation_amount6}
+                      ${this.getUnit("precipitation")}`
+                    : ""}
+                </b>
               </li>
             `
           : ""}
