@@ -908,6 +908,7 @@ class AstroWeatherCard extends LitElement {
             data: condition,
             yAxisID: "PercentageAxis",
             backgroundColor: colorConditionGradient,
+            borderDash: [2, 4],
             fill: fillLine,
             borderWidth: 4,
             borderColor: colorCondition,
