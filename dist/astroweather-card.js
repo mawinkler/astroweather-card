@@ -602,7 +602,7 @@ class AstroWeatherCard extends LitElement {
                 <b
                   >${stateObj.attributes.deepsky_forecast_today_desc}
                   ${stateObj.attributes
-                    .deepsky_forecast_today_precipitation_amount6 >= 0
+                    .deepsky_forecast_today_precipitation_amount6 > 0
                     ? html`, Precip:
                       ${stateObj.attributes
                         .deepsky_forecast_today_precipitation_amount6}
@@ -624,7 +624,7 @@ class AstroWeatherCard extends LitElement {
                 <b
                   >${stateObj.attributes.deepsky_forecast_tomorrow_desc}
                   ${stateObj.attributes
-                    .deepsky_forecast_tomorrow_precipitation_amount6 >= 0
+                    .deepsky_forecast_tomorrow_precipitation_amount6 > 0
                     ? html`, Precip:
                       ${stateObj.attributes
                         .deepsky_forecast_tomorrow_precipitation_amount6}
@@ -829,6 +829,7 @@ class AstroWeatherCard extends LitElement {
     var calm = [];
     var li = [];
     var precip = [];
+    var precipMax = 0;
 
     for (i = 0; i < forecast.length; i++) {
       var d = forecast[i];
@@ -856,6 +857,9 @@ class AstroWeatherCard extends LitElement {
       }
       if (graphPrecip != undefined ? graphPrecip : true) {
         precip.push(d.precipitation_amount);
+        if (d.precipitation_amount > precipMax) {
+          precipMax = d.precipitation_amount
+        }
       }
     }
 
@@ -1142,7 +1146,7 @@ class AstroWeatherCard extends LitElement {
             position: "right",
             beginAtZero: true,
             min: 0,
-            max: 10,
+            max: Math.ceil(precipMax * 1.2),
             grid: {
               display: false,
               drawBorder: false,
