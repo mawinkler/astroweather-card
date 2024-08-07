@@ -291,7 +291,8 @@ class AstroWeatherCard extends LitElement {
     }
 
     return html`
-      <ha-card @click="${this._handleClick}">
+      <ha-card 
+        @click=${e => this._handlePopup(e, this._config.entity)}>
         <div class="card-content">
           ${this._config.current !== false ? this.renderCurrent(stateObj) : ""}
           ${this._config.details !== false
@@ -1329,8 +1330,48 @@ class AstroWeatherCard extends LitElement {
     }
   }
 
-  _handleClick() {
-    // fireEvent(this, "hass-more-info", { entityId: this._config.entity });
+  _handlePopup(e, entity) {
+    e.stopPropagation();
+    this._handleClick(this, this._hass, this._config, this._config.tap_action, entity.entity_id || entity);
+  }
+
+  _handleClick(node, hass, config, actionConfig, entityId) {
+    let e;
+
+    switch (actionConfig.action) {
+      case 'more-info': {
+        e = new Event('hass-more-info', { composed: true });
+        e.detail = { entityId };
+        node.dispatchEvent(e);
+        break;
+      }
+      case 'navigate': {
+        if (!actionConfig.navigation_path) return;
+        window.history.pushState(null, '', actionConfig.navigation_path);
+        e = new Event('location-changed', { composed: true });
+        e.detail = { replace: false };
+        window.dispatchEvent(e);
+        break;
+      }
+      case 'call-service': {
+        if (!actionConfig.service) return;
+        const [domain, service] = actionConfig.service.split('.', 2);
+        const data = { ...actionConfig.data };
+        hass.callService(domain, service, data);
+        break;
+      }
+      case 'url': {
+        if (!actionConfig.url_path) return;
+        window.location.href = actionConfig.url_path;
+        break;
+      }
+      case 'fire-dom-event': {
+        e = new Event('ll-custom', { composed: true, bubbles: true });
+        e.detail = actionConfig;
+        node.dispatchEvent(e);
+        break;
+      }
+    }
   }
 
   static get styles() {

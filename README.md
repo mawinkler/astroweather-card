@@ -61,8 +61,50 @@ graph_transparency: false
 graph_condition: true
 graph_calm: false
 graph_li: false
+```
+
+Optionally, you can define custom tap actions to happen when clicking on the card. Below are some examples:
+
+```yaml
 tap_action:
-  action: none
+  action: more-info
+```
+
+```yaml
+# Assumes an input boolean to put your house into stargazer mode
+tap_action:
+  action: call-service
+  service: input_boolean.toggle
+  data:
+    entity_id: input_boolean.stargazer_mode
+```
+
+```yaml
+# Assumes you have a view called astroweather
+tap_action:
+  action: navigate
+  navigation_path: /lovelace/astroweather
+```
+
+```yaml
+# Navigates you to Meteoblue seeing forecast
+tap_action:
+  action: url
+  url_path: https://www.meteoblue.com/en/weather/outdoorsports/seeing
+```
+
+```yaml
+# Assumes you have UpTonight and browser_mod
+tap_action:
+  action: fire-dom-event
+  browser_mod:
+    service: browser_mod.popup
+    data:
+      title: UpTonight
+      size: wide
+      content:
+        type: picture-entity
+        entity: image.uptonight
 ```
 
 You can choose wich elements of the weather card you want to show:
@@ -73,7 +115,7 @@ You can choose wich elements of the weather card you want to show:
 - The hourly forecast for clouds, seeing, transparency, view conditions and temperature.
 - The graphical forecast. You can configure which conditions to display and define the line colors. 
 
-If you enable either the forecast or the graph you can define the number of future forecasts in hourly steps. It is best to only choose the forecast table or the graphical forcast since the graphical variant can display 48hs easily which is not possible with the table. To easily create a dedicated card for the table view, simply clone the card and enable forecast only.
+If you enable either the forecast or the graph you can define the number of future forecasts in hourly steps. It is best to only choose the forecast table or the graphical forcast since the graphical variant can display 48hs easily which is not possible with the table. You might create a dedicated card for the table view, simply clone the card and enable forecast only.
 
 ```yaml
 type: custom:astroweather-card
