@@ -499,22 +499,16 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
-          Temp: ${stateObj.attributes.temperature}
-          ${this.getUnit("temperature")}
+          <b>Temp: ${stateObj.attributes.temperature}
+          ${this.getUnit("temperature")}</b>
         </li>
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
-          Humidity: ${stateObj.attributes.humidity} %
+          <b>Humidity: ${stateObj.attributes.humidity} %</b>
         </li>
         <li>
-          <ha-icon icon="mdi:windsock"></ha-icon>
-          <b
-            >Wind: ${stateObj.attributes.wind_bearing}
-            ${this.getUnit("wind_speed") == "m/s"
-              ? stateObj.attributes.wind_speed
-              : Math.round(stateObj.attributes.wind_speed * 2.23694)}
-            ${this.getUnit("wind_speed")}</b
-          >
+          <ha-icon icon="mdi:thermometer"></ha-icon>
+          <b>Dewpoint: ${stateObj.attributes.dewpoint}<span class="unit"> °C</span></b>
         </li>
         <li>
           <b
@@ -529,6 +523,20 @@ class AstroWeatherCard extends LitElement {
             ${stateObj.attributes.precipitation_amount}
             ${this.getUnit("precipitation")}</b
           >
+        </li>
+        <li>
+          <ha-icon icon="mdi:windsock"></ha-icon>
+          <b
+            >Wind: ${stateObj.attributes.wind_bearing}
+            ${this.getUnit("wind_speed") == "m/s"
+              ? stateObj.attributes.wind_speed
+              : Math.round(stateObj.attributes.wind_speed * 2.23694)}
+            ${this.getUnit("wind_speed")}</b
+          >
+        </li>
+        <li>
+          <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
+          <b>LI: ${stateObj.attributes.lifted_index}<span class="unit"> °C</span></b>
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
@@ -573,10 +581,6 @@ class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:moon-waning-gibbous"></ha-icon>
           Phase: ${stateObj.attributes.moon_phase} %
-        </li>
-        <li>
-          <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
-          LI: ${stateObj.attributes.lifted_index}<span class="unit"> °C</span>
         </li>
         <li>
           <ha-icon icon="mdi:map-clock-outline"></ha-icon>
