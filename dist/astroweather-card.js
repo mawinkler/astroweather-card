@@ -4,7 +4,7 @@ const LitElement = customElements.get("ha-panel-lovelace")
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
-const CARD_VERSION = "v0.62.0";
+const CARD_VERSION = "v0.70.0";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
@@ -271,10 +271,7 @@ class AstroWeatherCard extends LitElement {
         </ha-card>
       `;
     }
-    if (
-      stateObj.attributes.attribution != "Powered by 7Timer and Met.no" &&
-      stateObj.attributes.attribution != "Powered by Met.no"
-    ) {
+    if (!stateObj.attributes.attribution.startsWith("Powered by Met.no")) {
       return html`
         <style>
           .not-found {
@@ -293,8 +290,7 @@ class AstroWeatherCard extends LitElement {
     }
 
     return html`
-      <ha-card 
-        @click=${e => this._handlePopup(e, this._config.entity)}>
+      <ha-card @click=${(e) => this._handlePopup(e, this._config.entity)}>
         <div class="card-content">
           ${this._config.current !== false ? this.renderCurrent(stateObj) : ""}
           ${this._config.details !== false
@@ -499,8 +495,10 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
-          <b>Temp: ${stateObj.attributes.temperature}
-          ${this.getUnit("temperature")}</b>
+          <b
+            >Temp: ${stateObj.attributes.temperature}
+            ${this.getUnit("temperature")}</b
+          >
         </li>
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
@@ -508,7 +506,11 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
-          <b>Dewpoint: ${stateObj.attributes.dewpoint}<span class="unit"> °C</span></b>
+          <b
+            >Dewpoint: ${stateObj.attributes.dewpoint}<span class="unit">
+              °C</span
+            ></b
+          >
         </li>
         <li>
           <b
@@ -536,7 +538,11 @@ class AstroWeatherCard extends LitElement {
         </li>
         <li>
           <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
-          <b>LI: ${stateObj.attributes.lifted_index}<span class="unit"> °C</span></b>
+          <b
+            >LI: ${stateObj.attributes.lifted_index}<span class="unit">
+              °C</span
+            ></b
+          >
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
@@ -879,7 +885,7 @@ class AstroWeatherCard extends LitElement {
       if (graphPrecip != undefined ? graphPrecip : true) {
         precip.push(d.precipitation_amount);
         if (d.precipitation_amount > precipMax) {
-          precipMax = d.precipitation_amount
+          precipMax = d.precipitation_amount;
         }
       }
       if (graphFog != undefined ? graphFog : true) {
@@ -1378,41 +1384,47 @@ class AstroWeatherCard extends LitElement {
 
   _handlePopup(e, entity) {
     e.stopPropagation();
-    this._handleClick(this, this._hass, this._config, this._config.tap_action, entity.entity_id || entity);
+    this._handleClick(
+      this,
+      this._hass,
+      this._config,
+      this._config.tap_action,
+      entity.entity_id || entity
+    );
   }
 
   _handleClick(node, hass, config, actionConfig, entityId) {
     let e;
 
     switch (actionConfig.action) {
-      case 'more-info': {
-        e = new Event('hass-more-info', { composed: true });
+      case "more-info": {
+        e = new Event("hass-more-info", { composed: true });
         e.detail = { entityId };
         node.dispatchEvent(e);
         break;
       }
-      case 'navigate': {
+      case "navigate": {
         if (!actionConfig.navigation_path) return;
-        window.history.pushState(null, '', actionConfig.navigation_path);
-        e = new Event('location-changed', { composed: true });
+        window.history.pushState(null, "", actionConfig.navigation_path);
+        e = new Event("location-changed", { composed: true });
         e.detail = { replace: false };
         window.dispatchEvent(e);
         break;
       }
-      case 'call-service': {
+      case "call-service": {
         if (!actionConfig.service) return;
-        const [domain, service] = actionConfig.service.split('.', 2);
+        const [domain, service] = actionConfig.service.split(".", 2);
         const data = { ...actionConfig.data };
         hass.callService(domain, service, data);
         break;
       }
-      case 'url': {
+      case "url": {
         if (!actionConfig.url_path) return;
         window.location.href = actionConfig.url_path;
         break;
       }
-      case 'fire-dom-event': {
-        e = new Event('ll-custom', { composed: true, bubbles: true });
+      case "fire-dom-event": {
+        e = new Event("ll-custom", { composed: true, bubbles: true });
         e.detail = actionConfig;
         node.dispatchEvent(e);
         break;

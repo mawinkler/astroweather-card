@@ -1,6 +1,6 @@
 # Lovelace AstroWeather Card
 
-![GitHub release](https://img.shields.io/badge/release-v0.62.0-blue)
+![GitHub release](https://img.shields.io/badge/release-v0.70.0-blue)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/custom-components/hacs)
 
 This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather).
@@ -42,25 +42,29 @@ And add a card with type `custom:astroweather-card`:
 ```yaml
 type: custom:astroweather-card
 entity: weather.astroweather_backyard
-name: Backyard
-current: true
 details: true
+current: true
 deepskydetails: true
 forecast: false
 graph: true
-line_color_condition_night: '#eeffff'
-line_color_condition: '#f07178'
-line_color_cloudless: '#c3e88d'
-line_color_seeing: '#ffcb6b'
-line_color_transparency: '#82aaff'
-line_color_calm: '#ff5370'
-number_of_forecasts: '48'
+graph_condition: true
 graph_cloudless: true
 graph_seeing: false
 graph_transparency: false
-graph_condition: true
-graph_calm: false
+graph_calm: true
 graph_li: false
+graph_precip: true
+graph_fog: true
+number_of_forecasts: "48"
+line_color_condition: "#f07178"
+line_color_condition_night: "#eeffff"
+line_color_cloudless: "#c3e88d"
+line_color_seeing: "#ffcb6b"
+line_color_transparency: "#82aaff"
+line_color_calm: "#ff5370"
+line_color_li: "#89ddff"
+line_color_precip: "#82aaff"
+line_color_fog: "#dde8ff"
 ```
 
 Optionally, you can define custom tap actions to happen when clicking on the card. Below are some examples:
