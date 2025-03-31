@@ -1,6 +1,7 @@
 {
+  "type": "module",
   "name": "astroweather-card",
-  "version": "0.70.0",
+  "version": "0.71.0",
   "description": "This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.0+`.",
   "keywords": [
     "home-assistant",
@@ -18,9 +19,28 @@
   },
   "author": "Markus Winkler",
   "license": "MIT",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c --watch",
+    "lint": "eslint ./src --ext .ts",
+    "format": "prettier --write ./src",
+    "test": "jest"
+  },
   "dependencies": {
-    "chart.js": "3.7.1",
-    "chartjs-plugin-datalabels": "^2.0.0",
-    "lit": "^2.2.0"
+    "chart.js": "^4.4.8",
+    "custom-card-helpers": "^1.9.0",
+    "lit": "^3.2.1",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^15.3.1",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "depcheck": "^1.4.7",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "rollup": "^4.37.0",
+    "typescript": "^5.8.2"
   }
 }

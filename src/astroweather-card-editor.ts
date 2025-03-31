@@ -1,26 +1,60 @@
-const fireEvent = (node, type, detail, options) => {
-  options = options || {};
-  detail = detail === null || detail === undefined ? {} : detail;
-  const event = new Event(type, {
-    bubbles: options.bubbles === undefined ? true : options.bubbles,
-    cancelable: Boolean(options.cancelable),
-    composed: options.composed === undefined ? true : options.composed,
-  });
-  event.detail = detail;
-  node.dispatchEvent(event);
-  return event;
-};
+import { LitElement, html, TemplateResult, css } from 'lit';
+import { HomeAssistant, LovelaceCardEditor, LovelaceCardConfig, fireEvent } from 'custom-card-helpers';
+import { customElement, property, state } from "lit/decorators.js";
 
-const LitElement = customElements.get("hui-masonry-view")
-  ? Object.getPrototypeOf(customElements.get("hui-masonry-view"))
-  : Object.getPrototypeOf(customElements.get("hui-view"));
-const html = LitElement.prototype.html;
-const css = LitElement.prototype.css;
-const HELPERS = window.loadCardHelpers();
+interface CardConfig extends LovelaceCardConfig {
+  entity: string;
+  [key: string]: any;
+}
 
-export class AstroWeatherCardEditor extends LitElement {
-  setConfig(config) {
-    this._config = { ...config };
+@customElement('astroweather-card-editor')
+export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEditor {
+
+  @property({ attribute: false }) public hass?: HomeAssistant;
+
+  @state() private _hass!: HomeAssistant;
+  @state() private _config!: CardConfig;
+  @state() private _helpers?: any;
+  private _glanceCard?: any;
+
+  private _initialized = false;
+
+  public setConfig(config: CardConfig): void {
+      this._config = { ...config };
+      this.loadCardHelpers();
+      this.render();
+  }
+
+  protected shouldUpdate(): boolean {
+    if (!this._initialized) {
+      this._initialize();
+    }
+    return true;
+  }
+
+  private _initialize(): void {
+    if (this.hass === undefined) return;
+    if (this._config === undefined) return;
+    if (this._helpers === undefined) return;
+    this._initialized = true;
+  }
+  
+  private async loadCardHelpers(): Promise<void> {
+    this._helpers = await (window as any).loadCardHelpers();
+
+    // Load the ha-entity-picker
+    if (!this._glanceCard) {
+      this._glanceCard = customElements.get('hui-glance-card');
+      this._glanceCard.getConfigElement().then(() => this.requestUpdate());
+    }
+  }
+
+  firstUpdated() {
+    this._helpers.then((help) => {
+      if (help.importMoreInfoControl) {
+        help.importMoreInfoControl("fan");
+      }
+    });
   }
 
   static get properties() {
@@ -28,116 +62,108 @@ export class AstroWeatherCardEditor extends LitElement {
   }
 
   get _entity() {
-    return this._config.entity || "";
+    return this._config?.entity || "";
   }
 
   get _current() {
-    return this._config.current !== false;
+    return this._config?.current !== false;
   }
 
   get _details() {
-    return this._config.details !== false;
+    return this._config?.details !== false;
   }
 
   get _deepskydetails() {
-    return this._config.deepskydetails !== false;
+    return this._config?.deepskydetails !== false;
   }
 
   get _forecast() {
-    return this._config.forecast !== false;
+    return this._config?.forecast !== false;
   }
 
   get _graph() {
-    return this._config.graph !== false;
+    return this._config?.graph !== false;
   }
 
   get _graph_condition() {
-    return this._config.graph_condition !== false;
+    return this._config?.graph_condition !== false;
   }
 
   get _graph_cloudless() {
-    return this._config.graph_cloudless !== false;
+    return this._config?.graph_cloudless !== false;
   }
 
   get _graph_seeing() {
-    return this._config.graph_seeing !== false;
+    return this._config?.graph_seeing !== false;
   }
 
   get _graph_transparency() {
-    return this._config.graph_transparency !== false;
+    return this._config?.graph_transparency !== false;
   }
 
   get _graph_calm() {
-    return this._config.graph_calm !== false;
+    return this._config?.graph_calm !== false;
   }
 
   get _graph_li() {
-    return this._config.graph_li !== false;
+    return this._config?.graph_li !== false;
   }
 
   get _graph_precip() {
-    return this._config.graph_precip !== false;
+    return this._config?.graph_precip !== false;
   }
 
   get _graph_fog() {
-    return this._config.graph_fog !== false;
+    return this._config?.graph_fog !== false;
   }
 
   get _line_color_condition() {
-    return this._config.line_color_condition || "#f07178";
+    return this._config?.line_color_condition || "#f07178";
   }
 
   get _line_color_condition_night() {
-    return this._config.line_color_condition_night || "#eeffff";
+    return this._config?.line_color_condition_night || "#eeffff";
   }
 
   get _line_color_cloudless() {
-    return this._config.line_color_cloudless || "#c3e88d";
+    return this._config?.line_color_cloudless || "#c3e88d";
   }
 
   get _line_color_seeing() {
-    return this._config.line_color_seeing || "#ffcb6b";
+    return this._config?.line_color_seeing || "#ffcb6b";
   }
 
   get _line_color_transparency() {
-    return this._config.line_color_transparency || "#82aaff";
+    return this._config?.line_color_transparency || "#82aaff";
   }
 
   get _line_color_calm() {
-    return this._config.line_color_calm || "#ff5370";
+    return this._config?.line_color_calm || "#ff5370";
   }
 
   get _line_color_li() {
-    return this._config.line_color_li || "#89ddff";
+    return this._config?.line_color_li || "#89ddff";
   }
 
   get _line_color_precip() {
-    return this._config.line_color_precip || "#82aaff";
+    return this._config?.line_color_precip || "#82aaff";
   }
 
   get _line_color_fog() {
-    return this._config.line_color_fog || "#dde8ff";
+    return this._config?.line_color_fog || "#dde8ff";
   }
 
   get _hourly_forecast() {
     return true;
-    // return this._config.hourly_forecast !== false;
+    // return this._config?.hourly_forecast !== false;
   }
 
   get _number_of_forecasts() {
-    return this._config.number_of_forecasts || 8;
+    return this._config?.number_of_forecasts || 8;
   }
 
-  firstUpdated() {
-    HELPERS.then((help) => {
-      if (help.importMoreInfoControl) {
-        help.importMoreInfoControl("fan");
-      }
-    });
-  }
-
-  render() {
-    if (!this.hass) {
+  protected render(): TemplateResult | void {
+    if (!this.hass || !this._config) {
       return html``;
     }
 
@@ -371,7 +397,7 @@ export class AstroWeatherCardEditor extends LitElement {
   }
 
   _valueChanged(ev) {
-    if (!this._config || !this.hass) {
+    if (!this.hass || !this._config) {
       return;
     }
     const target = ev.target;
@@ -416,5 +442,3 @@ export class AstroWeatherCardEditor extends LitElement {
     `;
   }
 }
-
-customElements.define("astroweather-card-editor", AstroWeatherCardEditor);

@@ -1,0 +1,5 @@
+{
+  "compilerOptions": {
+    "types": ["home-assistant-js-websocket"]
+  }
+}
