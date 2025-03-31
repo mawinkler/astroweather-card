@@ -138,10 +138,7 @@ The card owns a card editor which pops up if you click on `[Edit]` which being i
 ## TS Migration
 
 ```sh
-npm install --save-dev rollup @rollup/plugin-node-resolve @rollup/plugin-typescript
-npm install --save-dev @rollup/plugin-commonjs
-npm install --save tslib
-npm install custom-card-helpers
+npm install --save-dev rollup @rollup/plugin-node-resolve @rollup/plugin-typescript @rollup/plugin-commonjs tslib custom-card-helpers
 
 npm install
 export PATH=$PWD/node_modules/.bin:$PATH
