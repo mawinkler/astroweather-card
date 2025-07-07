@@ -1,5 +1,10 @@
-import { LitElement, html, TemplateResult, css } from 'lit';
-import { HomeAssistant, LovelaceCardEditor, LovelaceCardConfig, fireEvent } from 'custom-card-helpers';
+import { LitElement, html, TemplateResult, css } from "lit";
+import {
+  HomeAssistant,
+  LovelaceCardEditor,
+  LovelaceCardConfig,
+  fireEvent,
+} from "custom-card-helpers";
 import { customElement, property, state } from "lit/decorators.js";
 
 interface CardConfig extends LovelaceCardConfig {
@@ -7,9 +12,11 @@ interface CardConfig extends LovelaceCardConfig {
   [key: string]: any;
 }
 
-@customElement('astroweather-card-editor')
-export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEditor {
-
+@customElement("astroweather-card-editor")
+export class AstroWeatherCardEditor
+  extends LitElement
+  implements LovelaceCardEditor
+{
   @property({ attribute: false }) public hass?: HomeAssistant;
 
   @state() private _hass!: HomeAssistant;
@@ -20,9 +27,9 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
   private _initialized = false;
 
   public setConfig(config: CardConfig): void {
-      this._config = { ...config };
-      this.loadCardHelpers();
-      this.render();
+    this._config = { ...config };
+    this.loadCardHelpers();
+    this.render();
   }
 
   protected shouldUpdate(): boolean {
@@ -38,13 +45,13 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
     if (this._helpers === undefined) return;
     this._initialized = true;
   }
-  
+
   private async loadCardHelpers(): Promise<void> {
     this._helpers = await (window as any).loadCardHelpers();
 
     // Load the ha-entity-picker
     if (!this._glanceCard) {
-      this._glanceCard = customElements.get('hui-glance-card');
+      this._glanceCard = customElements.get("hui-glance-card");
       this._glanceCard.getConfigElement().then(() => this.requestUpdate());
     }
   }
@@ -251,8 +258,21 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     .checked=${this._graph_condition}
                     .configValue="${"graph_condition"}"
                     @change="${this._valueChanged}"
-                  ></ha-switch
-                  ><span>Graph condition</span>
+                  ></ha-switch>
+                  <span>Graph condition</span>
+                  <div style="margin-left: auto;">
+                    <span
+                      ><input
+                        type="color"
+                        .value=${this._line_color_condition || "#ffffff"}
+                        .configValue="${"line_color_condition"}"
+                        @input="${this._valueChanged}" /><input
+                        type="color"
+                        .value=${this._line_color_condition_night || "#ffffff"}
+                        .configValue="${"line_color_condition_night"}"
+                        @input="${this._valueChanged}"
+                    /></span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -261,6 +281,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph cloudless</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_cloudless || "#ffffff"}
+                        .configValue="${"line_color_cloudless"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -269,6 +299,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph seeing</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_seeing || "#ffffff"}
+                        .configValue="${"line_color_seeing"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -277,6 +317,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph transparency</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_transparency || "#ffffff"}
+                        .configValue="${"line_color_transparency"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -285,6 +335,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph calmness</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_calm || "#ffffff"}
+                        .configValue="${"line_color_calm"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -293,6 +353,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph lifted index</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_li || "#ffffff"}
+                        .configValue="${"line_color_li"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -301,6 +371,16 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph precipitation</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_precip || "#ffffff"}
+                        .configValue="${"line_color_precip"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
                 <div class="switch">
                   <ha-switch
@@ -309,87 +389,18 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
                     @change="${this._valueChanged}"
                   ></ha-switch
                   ><span>Graph fog density</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_fog || "#ffffff"}
+                        .configValue="${"line_color_fog"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
                 </div>
               </div>`
-            : ""}
-          ${this._graph_condition == true && this._graph == true
-            ? html` <ha-textfield
-                  label="Line color condition"
-                  type="text"
-                  value=${this._line_color_condition}
-                  .configValue="${"line_color_condition"}"
-                  @change="${this._valueChanged}"
-                ></ha-textfield>
-                <ha-textfield
-                  label="Line color condition night"
-                  type="text"
-                  value=${this._line_color_condition_night}
-                  .configValue="${"line_color_condition_night"}"
-                  @change="${this._valueChanged}"
-                ></ha-textfield>`
-            : ""}
-          ${this._graph_cloudless == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color cloudless"
-                type="text"
-                value=${this._line_color_cloudless}
-                .configValue="${"line_color_cloudless"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_seeing == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color seeing"
-                type="text"
-                value=${this._line_color_seeing}
-                .configValue="${"line_color_seeing"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_transparency == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color transparency"
-                type="text"
-                value=${this._line_color_transparency}
-                .configValue="${"line_color_transparency"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_calm == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color calmness"
-                type="text"
-                value=${this._line_color_calm}
-                .configValue="${"line_color_calm"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_li == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color lifted index"
-                type="text"
-                value=${this._line_color_li}
-                .configValue="${"line_color_li"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_precip == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color precipitation"
-                type="text"
-                value=${this._line_color_precip}
-                .configValue="${"line_color_precip"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
-            : ""}
-          ${this._graph_fog == true && this._graph == true
-            ? html` <ha-textfield
-                label="Line color fog density"
-                type="text"
-                value=${this._line_color_fog}
-                .configValue="${"line_color_fog"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
             : ""}
         </div>
       </div>
@@ -407,6 +418,12 @@ export class AstroWeatherCardEditor extends LitElement implements LovelaceCardEd
     if (target.configValue) {
       if (target.value === "") {
         delete this._config[target.configValue];
+      }
+      if (target.value !== undefined) {
+        this._config = {
+          ...this._config,
+          [target.configValue]: target.value,
+        };
       } else {
         this._config = {
           ...this._config,
