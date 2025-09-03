@@ -1,6 +1,16 @@
 import { css } from "lit";
 
 const style = css`
+    .chart-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    }
+    canvas {
+    width: 100% !important;
+    height: 100% !important;
+    }
+
     ha-card {
     cursor: pointer;
     overflow: hidden;

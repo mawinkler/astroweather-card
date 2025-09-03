@@ -199,7 +199,18 @@ export class AstroWeatherCard extends LitElement {
   }
 
   public getCardSize(): number {
-    return 4;
+    const card = this.shadowRoot?.querySelector("ha-card");
+    if (!card) return 4; // fallback
+
+    // Pixel height of the card
+    const height = card.getBoundingClientRect().height;
+
+    // Convert pixels → "rows" (approx. 50px per row in Lovelace grid)
+    return Math.ceil(height / 50);
+  }
+
+  private _notifyResize() {
+    this.dispatchEvent(new Event("ll-rebuild", { bubbles: true, composed: true }));
   }
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
@@ -256,6 +267,12 @@ export class AstroWeatherCard extends LitElement {
     if (this._config.graph !== false) {
       this.drawChart();
     }
+    // Add resize observer for dynamic content
+    // const card = this.shadowRoot?.querySelector("ha-card");
+    // if (card) {
+    //   const ro = new ResizeObserver(() => this._notifyResize());
+    //   ro.observe(card);
+    // }
   }
 
   async updated(changedProperties) {
@@ -1177,6 +1194,7 @@ export class AstroWeatherCard extends LitElement {
       },
       options: {
         animation: false,
+        responsive: true,
         maintainAspectRatio: true,
         layout: {
           padding: {
@@ -1286,6 +1304,12 @@ export class AstroWeatherCard extends LitElement {
           legend: {
             display: true,
             position: "bottom",
+            onClick: (e, legendItem, legend) => {
+              const index = legendItem.datasetIndex;
+              const ci = legend.chart;
+              ci.setDatasetVisibility(index, !ci.isDatasetVisible(index));
+              ci.update();
+            },
             labels: {
               boxWidth: 10,
               font: {
@@ -1508,38 +1532,40 @@ export class AstroWeatherCard extends LitElement {
   _handleClick(node, hass, config, actionConfig, entityId) {
     let e;
 
-    switch (actionConfig.action) {
-      case "more-info": {
-        e = new Event("hass-more-info", { composed: true });
-        e.detail = { entityId };
-        node.dispatchEvent(e);
-        break;
-      }
-      case "navigate": {
-        if (!actionConfig.navigation_path) return;
-        window.history.pushState(null, "", actionConfig.navigation_path);
-        e = new Event("location-changed", { composed: true });
-        e.detail = { replace: false };
-        window.dispatchEvent(e);
-        break;
-      }
-      case "call-service": {
-        if (!actionConfig.service) return;
-        const [domain, service] = actionConfig.service.split(".", 2);
-        const data = { ...actionConfig.data };
-        hass.callService(domain, service, data);
-        break;
-      }
-      case "url": {
-        if (!actionConfig.url_path) return;
-        window.location.href = actionConfig.url_path;
-        break;
-      }
-      case "fire-dom-event": {
-        e = new Event("ll-custom", { composed: true, bubbles: true });
-        e.detail = actionConfig;
-        node.dispatchEvent(e);
-        break;
+    if (actionConfig) {
+      switch (actionConfig.action) {
+        case "more-info": {
+          e = new Event("hass-more-info", { composed: true });
+          e.detail = { entityId };
+          node.dispatchEvent(e);
+          break;
+        }
+        case "navigate": {
+          if (!actionConfig.navigation_path) return;
+          window.history.pushState(null, "", actionConfig.navigation_path);
+          e = new Event("location-changed", { composed: true });
+          e.detail = { replace: false };
+          window.dispatchEvent(e);
+          break;
+        }
+        case "call-service": {
+          if (!actionConfig.service) return;
+          const [domain, service] = actionConfig.service.split(".", 2);
+          const data = { ...actionConfig.data };
+          hass.callService(domain, service, data);
+          break;
+        }
+        case "url": {
+          if (!actionConfig.url_path) return;
+          window.location.href = actionConfig.url_path;
+          break;
+        }
+        case "fire-dom-event": {
+          e = new Event("ll-custom", { composed: true, bubbles: true });
+          e.detail = actionConfig;
+          node.dispatchEvent(e);
+          break;
+        }
       }
     }
   }
