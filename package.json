@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "astroweather-card",
-  "version": "0.71.1",
+  "version": "0.74.0",
   "description": "This is a custom weather card for my custom [Home Assistant](https://www.home-assistant.io/) integration [AstroWeather](https://github.com/mawinkler/astroweather). It requires an AstroWeather version `0.20.0+`.",
   "keywords": [
     "home-assistant",

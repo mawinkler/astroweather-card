@@ -11,7 +11,7 @@ import style from "./style";
 
 import "./astroweather-card-editor";
 
-const CARD_VERSION = "v0.73.0";
+const CARD_VERSION = "v0.74.0";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
