@@ -3,12 +3,9 @@ import { customElement, property, state } from "lit/decorators.js";
 import {
   HomeAssistant,
   LovelaceCardEditor,
-  getLovelace,
-  hasConfigOrEntityChanged,
 } from "custom-card-helpers";
 import Chart from "chart.js/auto";
 import style from "./style";
-
 import "./astroweather-card-editor";
 
 const CARD_VERSION = "v0.74.0";
@@ -62,46 +59,36 @@ const fireEvent = (node, type, detail, options) => {
     cancelable: Boolean(options.cancelable),
     composed: options.composed === undefined ? true : options.composed,
   });
-  // event.detail = detail;
+
   node.dispatchEvent(event);
   return event;
 };
 
-// // Lazy loading
-// if (window.loadCardHelpers) {
-//   const cardHelpers = await window.loadCardHelpers();
-//   const entitiesCard = await cardHelpers.createCardElement({
-//     type: "entities",
-//     entities: [],
-//   }); // A valid config avoids errors
-//   // Then we make it load its editor through the static getConfigElement method
-//   entitiesCard.constructor.getConfigElement();
-// } else {
-//   console.error('window.loadCardHelpers is undefined');
-// }
-
-// if (!customElements.get("ha-gauge")) {
-//   if (window.loadCardHelpers) {
-//     const cardHelpers = await window.loadCardHelpers();
-//     cardHelpers.createCardElement({ type: "gauge" });
-//   } else {
-//     console.error('window.loadCardHelpers is undefined');
-//   }
-// }
-// // -Lazy loading
-
 @customElement("astroweather-card")
 export class AstroWeatherCard extends LitElement {
+  static get properties() {
+    return {
+      _config: { attribute: false },
+      _hass: { attribute: false },
+    };
+  }
+
   // private _hass!: HomeAssistant;
   @property({ attribute: false }) private _hass?: HomeAssistant;
   @state() private _config!: CardConfig;
   @state() private _weather?: any;
   @state() private component_loaded?: boolean = false;
   @state() private forecasts: any[] = [];
-  @state() private forecastChart?: any;
-  @state() private forecastItems: any[] = [];
+  @state() private forecastChart?: Chart;
   @state() private forecastSubscriber?: any;
   @state() private numberElements!: number;
+  private _lastDataTs = 0;
+  private _lastResizeTs = 0;
+  private _resizeObs?: ResizeObserver;
+
+  // tune these
+  private static readonly REDRAW_DEBOUNCE_MS = 3000;
+  private static readonly RESIZE_DEBOUNCE_MS = 2000;
 
   constructor() {
     super();
@@ -168,12 +155,19 @@ export class AstroWeatherCard extends LitElement {
       throw new Error("Entity is not an AstroWeather entity");
     }
     this._config = config;
-    this.requestUpdate();
   }
 
   set hass(hass: HomeAssistant) {
     if (!this._config) return;
-    this._hass = hass;
+
+    // Throttle noisy hass updates
+    const now = Date.now();
+    this._hass = hass as any;
+    if (now - this._lastDataTs >= AstroWeatherCard.REDRAW_DEBOUNCE_MS) {
+      this._lastDataTs = now;
+      this.updateChart();   // imperatively update chart (no recreate)
+    }
+
     this._weather =
       this._config.entity in hass.states
         ? hass.states[this._config.entity]
@@ -213,24 +207,11 @@ export class AstroWeatherCard extends LitElement {
     this.dispatchEvent(new Event("ll-rebuild", { bubbles: true, composed: true }));
   }
 
-  protected shouldUpdate(changedProps: PropertyValues): boolean {
-    // if (!this._config || !this.component_loaded) {
-    //   return false;
-    // }
-    if (changedProps.has("component_loaded")) {
-      return true;
-    }
-    if (changedProps.has("_view")) {
-      return true;
-    }
-    return hasConfigOrEntityChanged(this, changedProps, true);
-  }
-
   subscribeForecastEvents() {
     const callback = (event) => {
       this.forecasts = event.forecast;
       this.requestUpdate();
-      this.drawChart();
+      this.updateChart();
     };
 
     if (this._hass) {
@@ -255,32 +236,49 @@ export class AstroWeatherCard extends LitElement {
     super.connectedCallback();
   }
 
-  disconnectedCallback() {
+  disconnectedCallback(): void {
     super.disconnectedCallback();
-    if (this.forecastSubscriber) {
-      this.forecastSubscriber.then((unsub) => unsub());
-      this.forecastSubscriber = undefined;
-    }
+    this._resizeObs?.disconnect();
+  }
+
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    // Only re-render DOM when config changes (or first render).
+    // Chart updates are done imperatively, not through DOM re-render.
+    if (changedProps.has("_config")) return true;
+
+    // Allow DOM updates only when the bound entity actually changes:
+    const oldHass = changedProps.get("_hass") as HomeAssistant | undefined;
+    if (!oldHass) return true;
+    const eid = this._config?.entity;
+    return oldHass.states[eid] !== this._hass?.states[eid];
   }
 
   firstUpdated() {
-    if (this._config.graph !== false) {
-      this.drawChart();
-    }
-    // Add resize observer for dynamic content
-    // const card = this.shadowRoot?.querySelector("ha-card");
-    // if (card) {
-    //   const ro = new ResizeObserver(() => this._notifyResize());
-    //   ro.observe(card);
-    // }
+    // Retrieve first forecast
+    // this.subscribeForecastEvents();
+
+    // Get chart canvas
+    const chartCanvas = this.shadowRoot!.getElementById("forecastChart") as HTMLCanvasElement;
+    this.drawChart(chartCanvas);
+  
+    // Throttled resize handling
+    this._resizeObs = new ResizeObserver(() => {
+      const now = Date.now();
+      if (now - this._lastResizeTs < AstroWeatherCard.RESIZE_DEBOUNCE_MS) return;
+      this._lastResizeTs = now;
+      this.forecastChart?.resize();
+      this.forecastChart?.update("none");
+    });
+    this._resizeObs.observe(this.renderRoot.host);
+
   }
 
   async updated(changedProperties) {
     await this.updateComplete;
 
     if (
-      changedProperties.has("config") &&
-      changedProperties.get("config") !== undefined
+      changedProperties.has("_config") &&
+      changedProperties.get("_config") !== undefined
     ) {
       const oldConfig = changedProperties.get("_config");
 
@@ -299,7 +297,7 @@ export class AstroWeatherCard extends LitElement {
       }
 
       if (this.forecasts && this.forecasts.length) {
-        this.drawChart();
+        this.updateChart();
       }
     }
 
@@ -308,7 +306,7 @@ export class AstroWeatherCard extends LitElement {
         changedProperties.has("_config") &&
         changedProperties.get("_config") !== undefined
       ) {
-        this.drawChart();
+        this.updateChart();
       }
       if (changedProperties.has("weather")) {
         this.updateChart();
@@ -316,6 +314,85 @@ export class AstroWeatherCard extends LitElement {
     }
   }
 
+  getUnit(measure) {
+    if (this._hass) {
+      const lengthUnit = this._hass.config.unit_system.length;
+      switch (measure) {
+        case "air_pressure":
+          return lengthUnit === "km" ? "hPa" : "inHg";
+        case "length":
+          return lengthUnit;
+        case "precipitation":
+          return lengthUnit === "km" ? "mm" : "in";
+        case "temperature":
+          return lengthUnit === "km" ? "°C" : "°F";
+        case "wind_speed":
+          return lengthUnit === "km" ? "m/s" : "mph";
+        default:
+          return this._hass.config.unit_system.length || "";
+      }
+    } else {
+      return "km";
+    }
+  }
+
+  _handlePopup(e, entity) {
+    e.stopPropagation();
+    this._handleClick(
+      this,
+      this._hass,
+      this._config,
+      this._config.tap_action,
+      entity.entity_id || entity
+    );
+  }
+
+  _handleClick(node, hass, config, actionConfig, entityId) {
+    let e;
+
+    if (actionConfig) {
+      switch (actionConfig.action) {
+        case "more-info": {
+          e = new Event("hass-more-info", { composed: true });
+          e.detail = { entityId };
+          node.dispatchEvent(e);
+          break;
+        }
+        case "navigate": {
+          if (!actionConfig.navigation_path) return;
+          window.history.pushState(null, "", actionConfig.navigation_path);
+          e = new Event("location-changed", { composed: true });
+          e.detail = { replace: false };
+          window.dispatchEvent(e);
+          break;
+        }
+        case "call-service": {
+          if (!actionConfig.service) return;
+          const [domain, service] = actionConfig.service.split(".", 2);
+          const data = { ...actionConfig.data };
+          hass.callService(domain, service, data);
+          break;
+        }
+        case "url": {
+          if (!actionConfig.url_path) return;
+          window.location.href = actionConfig.url_path;
+          break;
+        }
+        case "fire-dom-event": {
+          e = new Event("ll-custom", { composed: true, bubbles: true });
+          e.detail = actionConfig;
+          node.dispatchEvent(e);
+          break;
+        }
+      }
+    }
+  }
+
+  static get styles() {
+    return style;
+  }
+
+  // Render card
   protected render() {
     if (!this._config || !this._hass) {
       return html``;
@@ -402,7 +479,6 @@ export class AstroWeatherCard extends LitElement {
   }
 
   renderDetails(stateObj, lang) {
-    // const sun = this._hass.states["sun.sun"];
     let sun_next_rising;
     let sun_next_setting;
     let sun_next_rising_nautical;
@@ -733,7 +809,7 @@ export class AstroWeatherCard extends LitElement {
     `;
   }
 
-  renderForecast(forecast, lang) {
+  renderForecast(lang) {
     const config = this._config;
     if (!this.forecasts || !this.forecasts.length || !config) {
       return [];
@@ -849,31 +925,28 @@ export class AstroWeatherCard extends LitElement {
     `;
   }
 
-  drawChart({ config, language, forecastItems } = this) {
-    // if (!this.forecasts || !this.forecasts.length) {
-    config = this._config;
-    if (!this.forecasts || !this.forecasts.length || !config) {
+  drawChart(chartCanvas: HTMLCanvasElement) {
+    const config = this._config;
+
+    var lang = "en"
+    if(this._hass) {
+      lang = this._hass.selectedLanguage || this._hass.language;
+    }
+
+    if (!this.forecasts || !config) {
       return [];
     }
 
-    const chartCanvas =
-      this.renderRoot &&
-      (this.renderRoot.querySelector("#forecastChart") as HTMLCanvasElement);
     if (!chartCanvas) {
       return [];
     }
 
     const ctx = chartCanvas.getContext("2d");
-    // this.renderRoot &&
-    // this.renderRoot.querySelector("#forecastChart").getContext("2d");
     if (!ctx) {
       return [];
     }
 
-    if (this.forecastChart) {
-      this.forecastChart.destroy();
-    }
-
+    // Render forecast
     const forecast = this.forecasts
       ? this.forecasts.slice(
           0,
@@ -923,7 +996,7 @@ export class AstroWeatherCard extends LitElement {
 
     const fillLine = false;
 
-    var i;
+    // var i;
     var dateTime: string[] = [];
     var condition: number[] = [];
     var clouds: number[] = [];
@@ -938,40 +1011,41 @@ export class AstroWeatherCard extends LitElement {
     var precipMax: number = 0;
     var fog: number[] = [];
 
-    for (i = 0; i < forecast.length; i++) {
-      var d = forecast[i];
-      dateTime.push(d.datetime);
-      if (graphCondition != undefined ? graphCondition : true) {
-        condition.push(d.condition);
-      }
-      if (graphCloudless != undefined ? graphCloudless : true) {
-        clouds.push(d.cloudless_percentage);
-        clouds_high.push(100 - d.cloud_area_fraction_high);
-        clouds_medium.push(100 - d.cloud_area_fraction_medium);
-        clouds_low.push(100 - d.cloud_area_fraction_low);
-      }
-      if (graphSeeing != undefined ? graphSeeing : true) {
-        seeing.push(d.seeing_percentage);
-      }
-      if (graphTransparency != undefined ? graphTransparency : true) {
-        transparency.push(d.transparency_percentage);
-      }
-      if (graphCalm != undefined ? graphCalm : true) {
-        calm.push(d.calm_percentage);
-      }
-      if (graphLi != undefined ? graphLi : true) {
-        li.push(d.lifted_index);
-      }
-      if (graphPrecip != undefined ? graphPrecip : true) {
-        precip.push(d.precipitation_amount);
-        if (d.precipitation_amount > precipMax) {
-          precipMax = d.precipitation_amount;
-        }
-      }
-      if (graphFog != undefined ? graphFog : true) {
-        fog.push(d.fog_area_fraction);
-      }
-    }
+    // for (i = 0; i < forecast.length; i++) {
+    //   var d = forecast[i];
+    //   dateTime.push(d.datetime);
+    //   if (graphCondition != undefined ? graphCondition : true) {
+    //     condition.push(d.condition);
+    //   }
+    //   if (graphCloudless != undefined ? graphCloudless : true) {
+    //     clouds.push(d.cloudless_percentage);
+    //     clouds_high.push(100 - d.cloud_area_fraction_high);
+    //     clouds_medium.push(100 - d.cloud_area_fraction_medium);
+    //     clouds_low.push(100 - d.cloud_area_fraction_low);
+    //   }
+    //   if (graphSeeing != undefined ? graphSeeing : true) {
+    //     seeing.push(d.seeing_percentage);
+    //   }
+    //   if (graphTransparency != undefined ? graphTransparency : true) {
+    //     transparency.push(d.transparency_percentage);
+    //   }
+    //   if (graphCalm != undefined ? graphCalm : true) {
+    //     calm.push(d.calm_percentage);
+    //   }
+    //   if (graphLi != undefined ? graphLi : true) {
+    //     li.push(d.lifted_index);
+    //     console.error(`${d.lifted_index}`);
+    //   }
+    //   if (graphPrecip != undefined ? graphPrecip : true) {
+    //     precip.push(d.precipitation_amount);
+    //     if (d.precipitation_amount > precipMax) {
+    //       precipMax = d.precipitation_amount;
+    //     }
+    //   }
+    //   if (graphFog != undefined ? graphFog : true) {
+    //     fog.push(d.fog_area_fraction);
+    //   }
+    // }
 
     Chart.defaults.color = textColor;
     Chart.defaults.scale.grid.color = colorDivider;
@@ -981,6 +1055,8 @@ export class AstroWeatherCard extends LitElement {
     Chart.defaults.elements.point.radius = 2;
     Chart.defaults.elements.point.hitRadius = 10;
     Chart.defaults.plugins.legend.position = "bottom";
+    Chart.defaults.animation = false;
+    Chart.defaults.transitions.active.animation.duration = 0;
 
     var colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -1014,7 +1090,7 @@ export class AstroWeatherCard extends LitElement {
       this._weather.attributes.sun_next_rising_astro
     ).getHours();
 
-    this.forecastChart = new Chart(ctx, {
+    this.forecastChart ||= new Chart(ctx, {
       type: "bar",
       data: {
         labels: dateTime,
@@ -1171,10 +1247,7 @@ export class AstroWeatherCard extends LitElement {
             data: precip,
             yAxisID: "PrecipitationAxis",
             backgroundColor: colorPrecipGradient,
-            // fill: fillLine,
             borderColor: colorPrecip,
-            // pointBorderColor: colorPrecip,
-            // pointRadius: 0,
             pointStyle: "circle",
           },
 
@@ -1184,10 +1257,7 @@ export class AstroWeatherCard extends LitElement {
             data: fog,
             yAxisID: "PercentageAxis",
             backgroundColor: colorFogGradient,
-            // fill: fillLine,
             borderColor: colorFog,
-            // pointBorderColor: colorFog,
-            // pointRadius: 0,
             pointStyle: "circle",
           },
         ],
@@ -1214,12 +1284,12 @@ export class AstroWeatherCard extends LitElement {
               font: {
                 size: 8,
               },
-              callback: function (value, index, values) {
-                var datetime = this.getLabelForValue(value);
-                var weekday = new Date(datetime).toLocaleDateString(language, {
+              callback: function (value) {
+                var datetime = this.getLabelForValue(Number(value));
+                var weekday = new Date(datetime).toLocaleDateString(lang, {
                   weekday: "short",
                 });
-                var time = new Date(datetime).toLocaleTimeString(language, {
+                var time = new Date(datetime).toLocaleTimeString(lang, {
                   hour12: false,
                   hour: "numeric",
                   minute: "numeric",
@@ -1261,7 +1331,6 @@ export class AstroWeatherCard extends LitElement {
             },
             ticks: {
               display: graphLi !== undefined ? !!graphLi : true,
-              // fontColor: colorLi,
               font: {
                 size: 8,
               },
@@ -1281,7 +1350,6 @@ export class AstroWeatherCard extends LitElement {
             },
             ticks: {
               display: graphPrecip !== undefined ? !!graphPrecip : true,
-              // fontColor: colorPrecip,
               font: {
                 size: 8,
               },
@@ -1307,7 +1375,7 @@ export class AstroWeatherCard extends LitElement {
             onClick: (e, legendItem, legend) => {
               const index = legendItem.datasetIndex;
               const ci = legend.chart;
-              ci.setDatasetVisibility(index, !ci.isDatasetVisible(index));
+              ci.setDatasetVisibility(Number(index), !ci.isDatasetVisible(Number(index)));
               ci.update();
             },
             labels: {
@@ -1349,26 +1417,13 @@ export class AstroWeatherCard extends LitElement {
               },
             },
           },
-          // datalabels: {
-          //   backgroundColor: backgroundColor,
-          //   borderColor: (context) => context.dataset.backgroundColor,
-          //   borderRadius: 8,
-          //   borderWidth: 1.5,
-          //   padding: 4,
-          //   font: {
-          //     lineHeight: 0.7,
-          //   },
-          //   formatter: function (value, context) {
-          //     return context.dataset.data[context.dataIndex] + "%";
-          //   },
-          // },
           tooltip: {
             caretSize: 0,
             caretPadding: 15,
             callbacks: {
               title: function (tooltipItem) {
                 var datetime = tooltipItem[0].label;
-                return new Date(datetime).toLocaleDateString(language, {
+                return new Date(datetime).toLocaleDateString(lang, {
                   month: "short",
                   day: "numeric",
                   weekday: "short",
@@ -1409,14 +1464,18 @@ export class AstroWeatherCard extends LitElement {
     });
   }
 
-  updateChart({ forecastItems, forecastChart } = this) {
+  updateChart() {
     const config = this._config;
-    if (!this.forecasts || !this.forecasts.length || !config) {
-      return [];
+
+    if (!this.forecasts || !config) {
+      return;
     }
-    if (this.forecastChart) {
-      this.forecastChart.destroy();
+
+    if (!this.forecastChart) {
+      return;
     }
+
+    // Update forecast
     const forecast = this.forecasts
       ? this.forecasts.slice(
           0,
@@ -1469,7 +1528,7 @@ export class AstroWeatherCard extends LitElement {
         calm.push(d.calm_percentage);
       }
       if (graphLi != undefined ? graphLi : true) {
-        li.push(((10 + d.lifted_index) * 100) / 20);
+        li.push(d.lifted_index);
       }
       if (graphPrecip != undefined ? graphPrecip : true) {
         precip.push(d.precipitation_amount);
@@ -1479,98 +1538,20 @@ export class AstroWeatherCard extends LitElement {
       }
     }
 
-    if (forecastChart) {
-      forecastChart.data.labels = dateTime;
-      forecastChart.data.datasets[0].data = condition;
-      forecastChart.data.datasets[1].data = clouds;
-      forecastChart.data.datasets[2].data = clouds_high;
-      forecastChart.data.datasets[3].data = clouds_medium;
-      forecastChart.data.datasets[4].data = clouds_low;
-      forecastChart.data.datasets[5].data = seeing;
-      forecastChart.data.datasets[6].data = transparency;
-      forecastChart.data.datasets[7].data = calm;
-      forecastChart.data.datasets[8].data = li;
-      forecastChart.data.datasets[9].data = precip;
-      forecastChart.data.datasets[10].data = fog;
-      forecastChart.update();
+    if (this.forecastChart) {
+      this.forecastChart.data.labels = dateTime;
+      this.forecastChart.data.datasets[0].data = condition;
+      this.forecastChart.data.datasets[1].data = clouds;
+      this.forecastChart.data.datasets[2].data = clouds_high;
+      this.forecastChart.data.datasets[3].data = clouds_medium;
+      this.forecastChart.data.datasets[4].data = clouds_low;
+      this.forecastChart.data.datasets[5].data = seeing;
+      this.forecastChart.data.datasets[6].data = transparency;
+      this.forecastChart.data.datasets[7].data = calm;
+      this.forecastChart.data.datasets[8].data = li;
+      this.forecastChart.data.datasets[9].data = precip;
+      this.forecastChart.data.datasets[10].data = fog;
+      this.forecastChart.update("none");
     }
-  }
-
-  getUnit(measure) {
-    if (this._hass) {
-      const lengthUnit = this._hass.config.unit_system.length;
-      switch (measure) {
-        case "air_pressure":
-          return lengthUnit === "km" ? "hPa" : "inHg";
-        case "length":
-          return lengthUnit;
-        case "precipitation":
-          return lengthUnit === "km" ? "mm" : "in";
-        case "temperature":
-          return lengthUnit === "km" ? "°C" : "°F";
-        case "wind_speed":
-          return lengthUnit === "km" ? "m/s" : "mph";
-        default:
-          return this._hass.config.unit_system.length || "";
-      }
-    } else {
-      return "km";
-    }
-  }
-
-  _handlePopup(e, entity) {
-    e.stopPropagation();
-    this._handleClick(
-      this,
-      this._hass,
-      this._config,
-      this._config.tap_action,
-      entity.entity_id || entity
-    );
-  }
-
-  _handleClick(node, hass, config, actionConfig, entityId) {
-    let e;
-
-    if (actionConfig) {
-      switch (actionConfig.action) {
-        case "more-info": {
-          e = new Event("hass-more-info", { composed: true });
-          e.detail = { entityId };
-          node.dispatchEvent(e);
-          break;
-        }
-        case "navigate": {
-          if (!actionConfig.navigation_path) return;
-          window.history.pushState(null, "", actionConfig.navigation_path);
-          e = new Event("location-changed", { composed: true });
-          e.detail = { replace: false };
-          window.dispatchEvent(e);
-          break;
-        }
-        case "call-service": {
-          if (!actionConfig.service) return;
-          const [domain, service] = actionConfig.service.split(".", 2);
-          const data = { ...actionConfig.data };
-          hass.callService(domain, service, data);
-          break;
-        }
-        case "url": {
-          if (!actionConfig.url_path) return;
-          window.location.href = actionConfig.url_path;
-          break;
-        }
-        case "fire-dom-event": {
-          e = new Event("ll-custom", { composed: true, bubbles: true });
-          e.detail = actionConfig;
-          node.dispatchEvent(e);
-          break;
-        }
-      }
-    }
-  }
-
-  static get styles() {
-    return style;
   }
 }
