@@ -1137,6 +1137,8 @@ export class AstroWeatherCard extends LitElement {
     Chart.defaults.elements.point.radius = 2;
     Chart.defaults.elements.point.hitRadius = 10;
     Chart.defaults.plugins.legend.position = "bottom";
+    Chart.defaults.animation = false;
+    Chart.defaults.transitions.active.animation.duration = 0;
 
     var colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -1171,7 +1173,7 @@ export class AstroWeatherCard extends LitElement {
     ).getHours();
 
     console.error("drawChart draw")
-    this.forecastChart = new Chart(ctx, {
+    this.forecastChart ||= new Chart(ctx, {
       type: "bar",
       data: {
         labels: dateTime,

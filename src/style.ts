@@ -3,12 +3,13 @@ import { css } from "lit";
 const style = css`
     .chart-container {
         position: relative;
+        aspect-ratio: 16/9;
+        height:auto;
         width: 100%;
-        height: 100%;
         will-change: transform;
-        transform: translateZ(0);   /* helps WKWebView compositing */
+        transform: translateZ(0);       /* helps WKWebView compositing */
         backface-visibility: hidden;
-        contain: layout paint;      /* isolate layout/paint */
+        contain: size layout paint;     /* isolate layout/paint */
     }
     canvas {
         width: 100% !important;
