@@ -1,9 +1,6 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import {
-  HomeAssistant,
-  LovelaceCardEditor,
-} from "custom-card-helpers";
+import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import Chart from "chart.js/auto";
 import style from "./style";
 import "./astroweather-card-editor";
@@ -164,7 +161,7 @@ export class AstroWeatherCard extends LitElement {
     this._hass = hass as any;
     if (now - this._lastDataTs >= AstroWeatherCard.REDRAW_DEBOUNCE_MS) {
       this._lastDataTs = now;
-      this._updateChart();   // imperatively update chart (no recreate)
+      this._updateChart(); // imperatively update chart (no recreate)
     }
 
     this._weather =
@@ -250,19 +247,21 @@ export class AstroWeatherCard extends LitElement {
 
   firstUpdated() {
     // Get chart canvas
-    const chartCanvas = this.shadowRoot!.getElementById("forecastChart") as HTMLCanvasElement;
+    const chartCanvas = this.shadowRoot!.getElementById(
+      "forecastChart"
+    ) as HTMLCanvasElement;
     this._drawChart(chartCanvas);
-  
+
     // Throttled resize handling
     this._resizeObs = new ResizeObserver(() => {
       const now = Date.now();
-      if (now - this._lastResizeTs < AstroWeatherCard.RESIZE_DEBOUNCE_MS) return;
+      if (now - this._lastResizeTs < AstroWeatherCard.RESIZE_DEBOUNCE_MS)
+        return;
       this._lastResizeTs = now;
       this._forecastChart?.resize();
       this._forecastChart?.update("none");
     });
     this._resizeObs.observe(this.renderRoot.host);
-
   }
 
   async updated(changedProperties) {
@@ -305,7 +304,6 @@ export class AstroWeatherCard extends LitElement {
       }
     }
   }
-
 
   static get styles() {
     return style;
@@ -366,9 +364,7 @@ export class AstroWeatherCard extends LitElement {
           ${this._config.deepskydetails !== false
             ? this._renderDeepSkyForecast(stateObj)
             : ""}
-          ${this._config.forecast !== false
-            ? this._renderForecast(lang)
-            : ""}
+          ${this._config.forecast !== false ? this._renderForecast(lang) : ""}
           ${this._config.graph !== false
             ? html`<div class="chart-container">
                 <canvas id="forecastChart"></canvas>
@@ -678,7 +674,9 @@ export class AstroWeatherCard extends LitElement {
 
     return html`
       <div
-        class="deepskyforecast clear ${this._numberElements > 1 ? "spacer" : ""}"
+        class="deepskyforecast clear ${this._numberElements > 1
+          ? "spacer"
+          : ""}"
       >
         ${stateObj.attributes.deepsky_forecast_today_plain
           ? html`
@@ -729,8 +727,7 @@ export class AstroWeatherCard extends LitElement {
   }
 
   private _renderForecast(lang) {
-    const config = this._config;
-    if (!this._forecasts || !this._forecasts.length || !config) {
+    if (!this._forecasts || !this._forecasts.length || !this._config) {
       return [];
     }
 
@@ -739,40 +736,40 @@ export class AstroWeatherCard extends LitElement {
       <div class="forecast clear ${this._numberElements > 1 ? "spacer" : ""}">
         <div class="forecastrow">
           <ha-icon icon="mdi:progress-clock"></ha-icon><br />
-          ${config.graph_condition
+          ${this._config.graph_condition
             ? html`<ha-icon icon="mdi:weather-snowy-rainy"></ha-icon><br />`
             : ""}
-          ${config.graph_cloudless
+          ${this._config.graph_cloudless
             ? html`<ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon
                 ><br />`
             : ""}
-          ${config.graph_seeing
+          ${this._config.graph_seeing
             ? html`<ha-icon icon="mdi:waves"></ha-icon><br />`
             : ""}
-          ${config.graph_transparency
+          ${this._config.graph_transparency
             ? html`<ha-icon icon="mdi:safety-goggles"></ha-icon><br />`
             : ""}
-          ${config.graph_calm
+          ${this._config.graph_calm
             ? html`<ha-icon icon="mdi:windsock"></ha-icon><br />`
             : ""}
-          ${config.graph_li
+          ${this._config.graph_li
             ? html`<ha-icon icon="mdi:hand-pointing-up"></ha-icon><br />`
             : ""}
-          ${config.graph_precip
+          ${this._config.graph_precip
             ? html`<ha-icon icon="mdi:weather-rainy"></ha-icon>`
             : ""}
-          ${config.graph_fog
+          ${this._config.graph_fog
             ? html`<ha-icon icon="mdi:weather-fog"></ha-icon>`
             : ""}
-          </div>
+        </div>
         ${this._forecasts
           ? this._forecasts
               .slice(
                 0,
-                config.number_of_forecasts
-                  ? config.number_of_forecasts > 7
+                this._config.number_of_forecasts
+                  ? this._config.number_of_forecasts > 7
                     ? 7
-                    : config.number_of_forecasts
+                    : this._config.number_of_forecasts
                   : 5
               )
               .map(
@@ -784,44 +781,50 @@ export class AstroWeatherCard extends LitElement {
                         minute: "2-digit",
                         hour12: false,
                       })}
-                      ${config.graph_condition
+                      ${this._config.graph_condition
                         ? html`<div class="value_item_bold">
                             ${hourly.condition}
                           </div>`
                         : ""}
-                      ${config.graph_cloudless
+                      ${this._config.graph_cloudless
                         ? html`<div class="value_item">
                             ${hourly.cloudcover_percentage}
                           </div>`
                         : ""}
-                      ${config.graph_seeing
+                      ${this._config.graph_seeing
                         ? html`<div class="value_item">
-                            ${((100 - hourly.seeing_percentage) * 2.5 / 100).toFixed(2)}
+                            ${(
+                              ((100 - hourly.seeing_percentage) * 2.5) /
+                              100
+                            ).toFixed(2)}
                           </div>`
                         : ""}
-                        ${config.graph_transparency
+                      ${this._config.graph_transparency
                         ? html`<div class="value_item">
-                            ${((100 - hourly.transparency_percentage) * 1 / 100).toFixed(2)}
+                            ${(
+                              ((100 - hourly.transparency_percentage) * 1) /
+                              100
+                            ).toFixed(2)}
                           </div>`
                         : ""}
-                      ${config.graph_calm
+                      ${this._config.graph_calm
                         ? html`<div class="value_item">
                             ${this._getUnit("wind_speed") == "m/s"
                               ? hourly.wind_speed
                               : Math.round(hourly.wind_speed * 2.23694)}
                           </div>`
                         : ""}
-                      ${config.graph_li
+                      ${this._config.graph_li
                         ? html`<div class="value_item">
                             ${hourly.lifted_index}
                           </div>`
                         : ""}
-                      ${config.graph_precip
+                      ${this._config.graph_precip
                         ? html`<div class="value_item">
                             ${hourly.precipitation_amount}
                           </div>`
                         : ""}
-                      ${config.graph_fog
+                      ${this._config.graph_fog
                         ? html`<div class="value_item">
                             ${hourly.fog_area_fraction}
                           </div>`
@@ -833,28 +836,26 @@ export class AstroWeatherCard extends LitElement {
           : ""}
         <div class="forecastrow">
           <br />
-          ${config.graph_condition ? html`%<br />` : ""}
-          ${config.graph_cloudless ? html`%<br />` : ""}
-          ${config.graph_seeing ? html`asec<br />` : ""}
-          ${config.graph_transparency ? html`mag<br />` : ""}
-          ${config.graph_calm ? html`m/s<br />` : ""}
-          ${config.graph_li ? html`°C<br />` : ""}
-          ${config.graph_precip ? html`mm<br />` : ""}
-          ${config.graph_fog ? html`mm<br />` : ""}
+          ${this._config.graph_condition ? html`%<br />` : ""}
+          ${this._config.graph_cloudless ? html`%<br />` : ""}
+          ${this._config.graph_seeing ? html`asec<br />` : ""}
+          ${this._config.graph_transparency ? html`mag<br />` : ""}
+          ${this._config.graph_calm ? html`m/s<br />` : ""}
+          ${this._config.graph_li ? html`°C<br />` : ""}
+          ${this._config.graph_precip ? html`mm<br />` : ""}
+          ${this._config.graph_fog ? html`mm<br />` : ""}
         </div>
       </div>
     `;
   }
 
   private _drawChart(chartCanvas: HTMLCanvasElement) {
-    const config = this._config;
-
-    var lang = "en"
-    if(this._hass) {
+    var lang = "en";
+    if (this._hass) {
       lang = this._hass.selectedLanguage || this._hass.language;
     }
 
-    if (!this._forecasts || !config || !chartCanvas) {
+    if (!this._forecasts || !this._config || !chartCanvas) {
       return [];
     }
 
@@ -867,48 +868,54 @@ export class AstroWeatherCard extends LitElement {
     const forecast = this._forecasts
       ? this._forecasts.slice(
           0,
-          config.number_of_forecasts ? config.number_of_forecasts : 5
+          this._config.number_of_forecasts
+            ? this._config.number_of_forecasts
+            : 5
         )
       : [];
     const mode = "hourly";
 
-    const graphCondition = config.graph_condition;
-    const graphCloudless = config.graph_cloudless;
-    const graphSeeing = config.graph_seeing;
-    const graphTransparency = config.graph_transparency;
-    const graphCalm = config.graph_calm;
-    const graphLi = config.graph_li;
-    const graphPrecip = config.graph_precip;
-    const graphFog = config.graph_fog;
+    const graphCondition = this._config.graph_condition;
+    const graphCloudless = this._config.graph_cloudless;
+    const graphSeeing = this._config.graph_seeing;
+    const graphTransparency = this._config.graph_transparency;
+    const graphCalm = this._config.graph_calm;
+    const graphLi = this._config.graph_li;
+    const graphPrecip = this._config.graph_precip;
+    const graphFog = this._config.graph_fog;
 
     const style = getComputedStyle(document.body);
     const backgroundColor = style.getPropertyValue("--card-background-color");
     const textColor = style.getPropertyValue("--primary-text-color");
 
-    const colorCondition = config.line_color_condition
-      ? config.line_color_condition
+    const colorCondition = this._config.line_color_condition
+      ? this._config.line_color_condition
       : "#f07178";
-    const colorConditionNight = config.line_color_condition_night
-      ? config.line_color_condition_night
+    const colorConditionNight = this._config.line_color_condition_night
+      ? this._config.line_color_condition_night
       : "#eeffff";
-    const colorCloudless = config.line_color_cloudless
-      ? config.line_color_cloudless
+    const colorCloudless = this._config.line_color_cloudless
+      ? this._config.line_color_cloudless
       : "#c3e88d";
     const colorCloudlessLevels = colorCloudless + "80";
-    const colorSeeing = config.line_color_seeing
-      ? config.line_color_seeing
+    const colorSeeing = this._config.line_color_seeing
+      ? this._config.line_color_seeing
       : "#ffcb6b";
-    const colorTransparency = config.line_color_transparency
-      ? config.line_color_transparency
+    const colorTransparency = this._config.line_color_transparency
+      ? this._config.line_color_transparency
       : "#82aaff";
-    const colorCalm = config.line_color_calm
-      ? config.line_color_calm
+    const colorCalm = this._config.line_color_calm
+      ? this._config.line_color_calm
       : "#ff5370";
-    const colorLi = config.line_color_li ? config.line_color_li : "#89ddff";
-    const colorPrecip = config.line_color_precip
-      ? config.line_color_precip
+    const colorLi = this._config.line_color_li
+      ? this._config.line_color_li
+      : "#89ddff";
+    const colorPrecip = this._config.line_color_precip
+      ? this._config.line_color_precip
       : "#82aaff";
-    const colorFog = config.line_color_fog ? config.line_color_fog : "#dde8ff";
+    const colorFog = this._config.line_color_fog
+      ? this._config.line_color_fog
+      : "#dde8ff";
     const colorDivider = style.getPropertyValue("--divider-color");
     const fillLine = false;
 
@@ -1253,7 +1260,10 @@ export class AstroWeatherCard extends LitElement {
             onClick: (e, legendItem, legend) => {
               const index = legendItem.datasetIndex;
               const ci = legend.chart;
-              ci.setDatasetVisibility(Number(index), !ci.isDatasetVisible(Number(index)));
+              ci.setDatasetVisibility(
+                Number(index),
+                !ci.isDatasetVisible(Number(index))
+              );
               ci.update();
             },
             labels: {
@@ -1277,7 +1287,7 @@ export class AstroWeatherCard extends LitElement {
                   index: i,
                 }));
               },
-              filter: function (legendItem, data) {
+              filter: function (legendItem) {
                 return (
                   (legendItem.text == "Condition" && graphCondition) ||
                   ((legendItem.text == "Cloudless" ||
@@ -1343,9 +1353,7 @@ export class AstroWeatherCard extends LitElement {
   }
 
   private _updateChart() {
-    const config = this._config;
-
-    if (!this._forecasts || !config || !this._forecastChart) {
+    if (!this._forecasts || !this._config || !this._forecastChart) {
       return;
     }
 
@@ -1353,18 +1361,20 @@ export class AstroWeatherCard extends LitElement {
     const forecast = this._forecasts
       ? this._forecasts.slice(
           0,
-          config.number_of_forecasts ? config.number_of_forecasts : 5
+          this._config.number_of_forecasts
+            ? this._config.number_of_forecasts
+            : 5
         )
       : [];
 
-    const graphCondition = config.graph_condition;
-    const graphCloudless = config.graph_cloudless;
-    const graphSeeing = config.graph_seeing;
-    const graphTransparency = config.graph_transparency;
-    const graphCalm = config.graph_calm;
-    const graphLi = config.graph_li;
-    const graphPrecip = config.graph_precip;
-    const graphFog = config.graph_fog;
+    const graphCondition = this._config.graph_condition;
+    const graphCloudless = this._config.graph_cloudless;
+    const graphSeeing = this._config.graph_seeing;
+    const graphTransparency = this._config.graph_transparency;
+    const graphCalm = this._config.graph_calm;
+    const graphLi = this._config.graph_li;
+    const graphPrecip = this._config.graph_precip;
+    const graphFog = this._config.graph_fog;
 
     var i: number;
     var dateTime: string[] = [];
@@ -1416,17 +1426,20 @@ export class AstroWeatherCard extends LitElement {
       }
     }
 
-    function rescaleY(chart, {
-      axisId = "y",
-      precipMax = 1,
-      pad = 0.1,           // 10% headroom
-      beginAtZero = true,  // clamp min to 0 if desired
-      hard = false,        // false -> use suggested*, true -> use hard min/max
-    } = {}) {
-      const yMax = precipMax;  //getVisibleYMax(chart, axisId);
+    function rescaleY(
+      chart,
+      {
+        axisId = "y",
+        precipMax = 1,
+        pad = 0.1, // 10% headroom
+        beginAtZero = true, // clamp min to 0 if desired
+        hard = false, // false -> use suggested*, true -> use hard min/max
+      } = {}
+    ) {
+      const yMax = precipMax; //getVisibleYMax(chart, axisId);
       const paddedMax = yMax * (1 + pad);
 
-      const scaleOpts = chart.options.scales[axisId] ||= {};
+      const scaleOpts = (chart.options.scales[axisId] ||= {});
       scaleOpts.beginAtZero = beginAtZero;
 
       if (hard) {
@@ -1457,9 +1470,10 @@ export class AstroWeatherCard extends LitElement {
       this._forecastChart.data.datasets[10].data = fog;
 
       rescaleY(this._forecastChart, {
-        axisId: "PrecipitationAxis", 
-        precipMax: precipMax, 
-        pad: 0.15});
+        axisId: "PrecipitationAxis",
+        precipMax: precipMax,
+        pad: 0.15,
+      });
 
       this._forecastChart.update("none");
     }
@@ -1492,13 +1506,12 @@ export class AstroWeatherCard extends LitElement {
     this._handleClick(
       this,
       this._hass,
-      this._config,
       this._config.tap_action,
       entity.entity_id || entity
     );
   }
 
-  private _handleClick(node, hass, config, actionConfig, entityId) {
+  private _handleClick(node, hass, actionConfig, entityId) {
     let e;
 
     if (actionConfig) {
