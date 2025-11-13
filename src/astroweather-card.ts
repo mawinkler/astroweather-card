@@ -975,6 +975,70 @@ export class AstroWeatherCard extends LitElement {
       this._weather.attributes.sun_next_rising_astro
     ).getHours();
 
+    const astroDarknessBackgroundPlugin = {
+      id: "astroDarknessBackground",
+      beforeDraw(chart: any, _args: any, pluginOptions: any) {
+        const {
+          ctx,
+          chartArea: { top, bottom, left, right },
+        } = chart;
+
+        const xAxis = chart.scales["x"];
+        const labels = (chart.data.labels || []) as string[];
+        if (!xAxis || !labels.length || !pluginOptions) return;
+
+        const sunSetHour: number = pluginOptions.sunSetHour;
+        const sunRiseHour: number = pluginOptions.sunRiseHour;
+        const color: string =
+          pluginOptions.color || "rgba(255, 255, 255, 0.06)"; // tweak to taste
+
+        // Build mask per label: is this point in astronomical darkness?
+        const darkMask = labels.map((label) => {
+          const hour = new Date(label).getHours();
+          if (Number.isNaN(hour)) return false;
+
+          if (sunSetHour < sunRiseHour) {
+            // Darkness between same-evening set and next-morning rise
+            return hour >= sunSetHour && hour <= sunRiseHour;
+          } else {
+            // Darkness spans midnight
+            return hour >= sunSetHour || hour <= sunRiseHour;
+          }
+        });
+
+        ctx.save();
+        ctx.fillStyle = color;
+
+        // Find contiguous dark segments and draw rectangles
+        let segmentStart: number | null = null;
+        for (let i = 0; i < darkMask.length; i++) {
+          const isDark = darkMask[i];
+          const isLast = i === darkMask.length - 1;
+
+          if (isDark && segmentStart === null) {
+            segmentStart = i;
+          }
+
+          if ((segmentStart !== null && !isDark) || (segmentStart !== null && isLast)) {
+            const startIndex = segmentStart;
+            const endIndex = isLast && isDark ? i : i - 1;
+
+            // Convert label positions to pixels on x-axis
+            const xStart = xAxis.getPixelForValue(labels[startIndex]);
+            const xEnd = xAxis.getPixelForValue(labels[endIndex]);
+            const width = xEnd - xStart || 0;
+
+            if (width !== 0) {
+              ctx.fillRect(xStart, top, width, bottom - top);
+            }
+            segmentStart = null;
+          }
+        }
+
+        ctx.restore();
+      },
+    };
+
     this._forecastChart ||= new Chart(ctx, {
       type: "bar",
       data: {
@@ -1317,8 +1381,16 @@ export class AstroWeatherCard extends LitElement {
               },
             },
           },
+          astroDarknessBackground: {
+            sunSetHour: sun_next_setting_astro,
+            sunRiseHour: sun_next_rising_astro,
+            color: "rgba(0, 0, 0, 0.25)", // or rgba(255,255,255,0.06) for a light band
+          },
         },
       },
+      plugins: [
+        astroDarknessBackgroundPlugin,
+      ],
     });
   }
 
