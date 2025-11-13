@@ -990,36 +990,6 @@ export class AstroWeatherCard extends LitElement {
             fill: fillLine,
             borderWidth: 4,
             borderColor: colorCondition,
-            pointBorderColor: function (context) {
-              var index = context.dataIndex;
-              var hour = new Date(dateTime[index]).getHours();
-              if (sun_next_setting_astro < sun_next_rising_astro) {
-                return hour >= sun_next_setting_astro &&
-                  hour <= sun_next_rising_astro
-                  ? colorConditionNight
-                  : colorCondition;
-              } else {
-                return hour >= sun_next_setting_astro ||
-                  hour <= sun_next_rising_astro
-                  ? colorConditionNight
-                  : colorCondition;
-              }
-            },
-            pointRadius: function (context) {
-              var index = context.dataIndex;
-              var hour = new Date(dateTime[index]).getHours();
-              if (sun_next_setting_astro < sun_next_rising_astro) {
-                return hour >= sun_next_setting_astro &&
-                  hour <= sun_next_rising_astro
-                  ? 5
-                  : 0;
-              } else {
-                return hour >= sun_next_setting_astro ||
-                  hour <= sun_next_rising_astro
-                  ? 5
-                  : 0;
-              }
-            },
             pointStyle: "star",
           },
           {
@@ -1376,20 +1346,20 @@ export class AstroWeatherCard extends LitElement {
     const graphPrecip = this._config.graph_precip;
     const graphFog = this._config.graph_fog;
 
-    var i: number;
-    var dateTime: string[] = [];
-    var condition: number[] = [];
-    var clouds: number[] = [];
-    var clouds_high: number[] = [];
-    var clouds_medium: number[] = [];
-    var clouds_low: number[] = [];
-    var seeing: number[] = [];
-    var transparency: number[] = [];
-    var calm: number[] = [];
-    var li: number[] = [];
-    var precip: number[] = [];
+    let i: number;
+    const dateTime: string[] = [];
+    const condition: number[] = [];
+    const clouds: number[] = [];
+    const clouds_high: number[] = [];
+    const clouds_medium: number[] = [];
+    const clouds_low: number[] = [];
+    const seeing: number[] = [];
+    const transparency: number[] = [];
+    const calm: number[] = [];
+    const li: number[] = [];
+    const precip: number[] = [];
     var precipMax: number = 0;
-    var fog: number[] = [];
+    const fog: number[] = [];
 
     for (i = 0; i < forecast.length; i++) {
       var d = forecast[i];
@@ -1423,6 +1393,45 @@ export class AstroWeatherCard extends LitElement {
       }
       if (graphFog != undefined ? graphFog : true) {
         fog.push(d.fog_area_fraction);
+      }
+    }
+
+    // Highlight points during astronomical darkness
+    const sun_next_setting_astro = new Date(
+      this._weather.attributes.sun_next_setting_astro
+    ).getHours();
+    const sun_next_rising_astro = new Date(
+      this._weather.attributes.sun_next_rising_astro
+    ).getHours();
+
+    const colorCondition =
+      this._config.line_color_condition || "#f07178";
+    const colorConditionNight =
+      this._config.line_color_condition_night || "#eeffff";
+
+    const condPointBorderColor: string[] = [];
+    const condPointRadius: number[] = [];
+
+    for (let idx = 0; idx < dateTime.length; idx++) {
+      const hour = new Date(dateTime[idx]).getHours();
+
+      let inAstroDarkness = false;
+      if (sun_next_setting_astro < sun_next_rising_astro) {
+        // Darkness between same-evening set and next-morning rise
+        inAstroDarkness =
+          hour >= sun_next_setting_astro && hour <= sun_next_rising_astro;
+      } else {
+        // Darkness spans midnight (set late, rise next day)
+        inAstroDarkness =
+          hour >= sun_next_setting_astro || hour <= sun_next_rising_astro;
+      }
+
+      if (inAstroDarkness) {
+        condPointBorderColor.push(colorConditionNight); // white
+        condPointRadius.push(5);                        // visible point
+      } else {
+        condPointBorderColor.push(colorCondition);      // normal color or none
+        condPointRadius.push(0);                        // hidden point
       }
     }
 
@@ -1468,6 +1477,11 @@ export class AstroWeatherCard extends LitElement {
       this._forecastChart.data.datasets[8].data = li;
       this._forecastChart.data.datasets[9].data = precip;
       this._forecastChart.data.datasets[10].data = fog;
+
+      // Apply the per-point styling to the "Condition" dataset
+      const conditionDataset: any = this._forecastChart.data.datasets[0];
+      conditionDataset.pointBorderColor = condPointBorderColor;
+      conditionDataset.pointRadius = condPointRadius;
 
       rescaleY(this._forecastChart, {
         axisId: "PrecipitationAxis",
