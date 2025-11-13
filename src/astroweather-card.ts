@@ -261,7 +261,14 @@ export class AstroWeatherCard extends LitElement {
       this._forecastChart?.resize();
       this._forecastChart?.update("none");
     });
-    this._resizeObs.observe(this.renderRoot.host);
+    // this._resizeObs.observe(this.renderRoot.host);
+
+    const host =
+      this.renderRoot instanceof ShadowRoot
+        ? this.renderRoot.host
+        : this;
+
+    this._resizeObs.observe(host as Element);
   }
 
   async updated(changedProperties) {
@@ -1309,11 +1316,11 @@ export class AstroWeatherCard extends LitElement {
               pointStyle: "circle",
               usePointStyle: true,
               generateLabels: (chart) => {
-                return chart.data.datasets.map((ds, i) => ({
-                  text: ds.label,
+                return chart.data.datasets.map((ds: any, i) => ({
+                  text: ds.label ?? "",
                   fontColor: textColor,
-                  strokeStyle: ds.borderColor,
-                  fillStyle: backgroundColor,
+                  strokeStyle: ds.borderColor as any,
+                  fillStyle: backgroundColor as any,
                   lineWidth: 2, //ds.borderWidth,
                   lineDash: ds.borderDash || [],
                   lineDashOffset: ds.borderDashOffset || 0,
