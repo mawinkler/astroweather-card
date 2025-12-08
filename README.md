@@ -21,7 +21,7 @@ This Integration is part of the default HACS store, so go to the HACS page and s
 
 ### Manual Installation
 
-To add the AstroWeather card to your installation, download the [astroweather-card.js](https://raw.githubusercontent.com/mawinkler/astroweather-card/main/dist/astroweather-card.js) and [astroweather-card-editor.js](https://raw.githubusercontent.com/mawinkler/astroweather-card/main/dist/astroweather-card-editor.js) to `/config/www/custom-lovelace/astroweather-card/`.
+To add the AstroWeather card to your installation, download the `astroweather-card.js` from the [release](https://raw.githubusercontent.com/mawinkler/astroweather-card/main/dist/astroweather-card.js)-page and copy it to `/config/www/custom-lovelace/astroweather-card/`.
 
 Add the card to your dashboard by choosing `[Edit Dashboard]` and then `[Manage Resources]`.
 
