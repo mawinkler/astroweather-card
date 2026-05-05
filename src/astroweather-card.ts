@@ -5,7 +5,7 @@ import Chart from "chart.js/auto";
 import style from "./style";
 import "./astroweather-card-editor";
 
-const CARD_VERSION = "v0.74.2";
+const CARD_VERSION = "v0.74.3";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,
@@ -115,6 +115,7 @@ export class AstroWeatherCard extends LitElement {
       graph: true,
       graph_condition: true,
       graph_cloudless: true,
+      graph_temperature: true,
       graph_seeing: true,
       graph_transparency: true,
       graph_calm: true,
@@ -125,6 +126,7 @@ export class AstroWeatherCard extends LitElement {
       line_color_condition: "#f07178", // magenta
       line_color_condition_night: "#eeffff", // white
       line_color_cloudless: "#c3e88d", // green
+      line_color_temperature: "#ffcb6b", // yellow
       line_color_seeing: "#ffcb6b", // yellow
       line_color_transparency: "#82aaff", // blue
       line_color_calm: "#ff5370", // red
@@ -884,6 +886,7 @@ export class AstroWeatherCard extends LitElement {
 
     const graphCondition = this._config.graph_condition;
     const graphCloudless = this._config.graph_cloudless;
+    const graphTemperature = this._config.graph_temperature;
     const graphSeeing = this._config.graph_seeing;
     const graphTransparency = this._config.graph_transparency;
     const graphCalm = this._config.graph_calm;
@@ -905,6 +908,9 @@ export class AstroWeatherCard extends LitElement {
       ? this._config.line_color_cloudless
       : "#c3e88d";
     const colorCloudlessLevels = colorCloudless + "80";
+    const colorTemperature = this._config.line_color_temperature
+      ? this._config.line_color_temperature
+      : "#ffcb6b";
     const colorSeeing = this._config.line_color_seeing
       ? this._config.line_color_seeing
       : "#ffcb6b";
@@ -932,6 +938,7 @@ export class AstroWeatherCard extends LitElement {
     var clouds_high: number[] = [];
     var clouds_medium: number[] = [];
     var clouds_low: number[] = [];
+    var temperature: number[] = [];
     var seeing: number[] = [];
     var transparency: number[] = [];
     var calm: number[] = [];
@@ -952,6 +959,7 @@ export class AstroWeatherCard extends LitElement {
 
     var colorConditionGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorCloudlessGradient = ctx.createLinearGradient(0, 0, 0, 300);
+    var colorTemperatureGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorSeeingGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorTransparencyGradient = ctx.createLinearGradient(0, 0, 0, 300);
     var colorCalmGradient = ctx.createLinearGradient(0, 0, 0, 300);
@@ -962,6 +970,8 @@ export class AstroWeatherCard extends LitElement {
     colorConditionGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
     colorCloudlessGradient.addColorStop(0, colorCloudless);
     colorCloudlessGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+    colorTemperatureGradient.addColorStop(0, colorTemperature);
+    colorTemperatureGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
     colorSeeingGradient.addColorStop(0, colorSeeing);
     colorSeeingGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
     colorTransparencyGradient.addColorStop(0, colorTransparency);
@@ -1116,6 +1126,19 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
+            label: "Temperature",
+            type: "line",
+            data: temperature,
+            yAxisID: "TemperatureAxis",
+            backgroundColor: colorTemperatureGradient,
+            fill: fillLine,
+            borderColor: colorTemperature,
+            pointBorderColor: colorTemperature,
+            pointRadius: 0,
+            pointStyle: "triangle",
+          },
+
+          {
             label: "Seeing",
             type: "line",
             data: seeing,
@@ -1246,6 +1269,25 @@ export class AstroWeatherCard extends LitElement {
               },
             },
           },
+          TemperatureAxis: {
+            position: "right",
+            beginAtZero: true,
+            min: -10,
+            max: 35,
+            grid: {
+              display: false,
+              drawTicks: true,
+            },
+            ticks: {
+              display: graphTemperature !== undefined ? !!graphTemperature : true,
+              font: {
+                size: 8,
+              },
+              callback: function (value) {
+                return value + "°C"; // Add unit
+              },
+            },
+          },
           LiftedIndexAxis: {
             position: "right",
             beginAtZero: true,
@@ -1336,6 +1378,7 @@ export class AstroWeatherCard extends LitElement {
                     legendItem.text == "M" ||
                     legendItem.text == "L") &&
                     graphCloudless) ||
+                  (legendItem.text == "Temp" && graphTemperature) ||
                   (legendItem.text == "Seeing" && graphSeeing) ||
                   (legendItem.text == "Transp" && graphTransparency) ||
                   (legendItem.text == "Calm" && graphCalm) ||
@@ -1367,12 +1410,13 @@ export class AstroWeatherCard extends LitElement {
                   2: "%",
                   3: "%",
                   4: "%",
-                  5: "%",
+                  5: "°C",
                   6: "%",
                   7: "%",
-                  8: "°C",
-                  9: "mm",
-                  10: "%",
+                  8: "%",
+                  9: "°C",
+                  10: "mm",
+                  11: "%",
                 };
 
                 // Get dataset index and corresponding unit
@@ -1418,6 +1462,7 @@ export class AstroWeatherCard extends LitElement {
 
     const graphCondition = this._config.graph_condition;
     const graphCloudless = this._config.graph_cloudless;
+    const graphTemperature = this._config.graph_temperature;
     const graphSeeing = this._config.graph_seeing;
     const graphTransparency = this._config.graph_transparency;
     const graphCalm = this._config.graph_calm;
@@ -1432,6 +1477,7 @@ export class AstroWeatherCard extends LitElement {
     const clouds_high: number[] = [];
     const clouds_medium: number[] = [];
     const clouds_low: number[] = [];
+    const temperature: number[] = [];
     const seeing: number[] = [];
     const transparency: number[] = [];
     const calm: number[] = [];
@@ -1451,6 +1497,9 @@ export class AstroWeatherCard extends LitElement {
         clouds_high.push(100 - d.cloud_area_fraction_high);
         clouds_medium.push(100 - d.cloud_area_fraction_medium);
         clouds_low.push(100 - d.cloud_area_fraction_low);
+      }
+      if (graphTemperature != undefined ? graphTemperature : true) {
+        temperature.push(d.temperature);
       }
       if (graphSeeing != undefined ? graphSeeing : true) {
         seeing.push(d.seeing_percentage);
@@ -1550,12 +1599,13 @@ export class AstroWeatherCard extends LitElement {
       this._forecastChart.data.datasets[2].data = clouds_high;
       this._forecastChart.data.datasets[3].data = clouds_medium;
       this._forecastChart.data.datasets[4].data = clouds_low;
-      this._forecastChart.data.datasets[5].data = seeing;
-      this._forecastChart.data.datasets[6].data = transparency;
-      this._forecastChart.data.datasets[7].data = calm;
-      this._forecastChart.data.datasets[8].data = li;
-      this._forecastChart.data.datasets[9].data = precip;
-      this._forecastChart.data.datasets[10].data = fog;
+      this._forecastChart.data.datasets[5].data = temperature;
+      this._forecastChart.data.datasets[6].data = seeing;
+      this._forecastChart.data.datasets[7].data = transparency;
+      this._forecastChart.data.datasets[8].data = calm;
+      this._forecastChart.data.datasets[9].data = li;
+      this._forecastChart.data.datasets[10].data = precip;
+      this._forecastChart.data.datasets[11].data = fog;
 
       // Apply the per-point styling to the "Condition" dataset
       const conditionDataset: any = this._forecastChart.data.datasets[0];

@@ -100,6 +100,10 @@ export class AstroWeatherCardEditor
     return this._config?.graph_cloudless !== false;
   }
 
+  get _graph_temperature() {
+    return this._config?.graph_temperature !== false;
+  }
+
   get _graph_seeing() {
     return this._config?.graph_seeing !== false;
   }
@@ -134,6 +138,10 @@ export class AstroWeatherCardEditor
 
   get _line_color_cloudless() {
     return this._config?.line_color_cloudless || "#c3e88d";
+  }
+
+  get _line_color_temperature() {
+    return this._config?.line_color_temperature || "#ffcb6b";
   }
 
   get _line_color_seeing() {
@@ -292,6 +300,26 @@ export class AstroWeatherCardEditor
                     </span>
                   </div>
                 </div>
+
+                <div class="switch">
+                  <ha-switch
+                    .checked=${this._graph_temperature}
+                    .configValue="${"graph_temperature"}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch
+                  ><span>Graph temperature</span>
+                  <div style="margin-left: auto;">
+                    <span>
+                      <input
+                        type="color"
+                        .value=${this._line_color_temperature || "#ffffff"}
+                        .configValue="${"line_color_temperature"}"
+                        @input="${this._valueChanged}"
+                      />
+                    </span>
+                  </div>
+                </div>
+
                 <div class="switch">
                   <ha-switch
                     .checked=${this._graph_seeing}
