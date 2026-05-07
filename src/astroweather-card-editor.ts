@@ -19,7 +19,6 @@ export class AstroWeatherCardEditor
 {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _hass!: HomeAssistant;
   @state() private _config!: CardConfig;
   @state() private _helpers?: any;
   private _glanceCard?: any;
@@ -47,21 +46,15 @@ export class AstroWeatherCardEditor
   }
 
   private async loadCardHelpers(): Promise<void> {
-    this._helpers = await (window as any).loadCardHelpers();
-
-    // Load the ha-entity-picker
+    const helpers = await (window as any).loadCardHelpers();
+    this._helpers = helpers;
+    if (helpers?.importMoreInfoControl) {
+      helpers.importMoreInfoControl("fan");
+    }
     if (!this._glanceCard) {
       this._glanceCard = customElements.get("hui-glance-card");
       this._glanceCard.getConfigElement().then(() => this.requestUpdate());
     }
-  }
-
-  firstUpdated() {
-    this._helpers.then((help) => {
-      if (help.importMoreInfoControl) {
-        help.importMoreInfoControl("fan");
-      }
-    });
   }
 
   static get properties() {
@@ -248,16 +241,14 @@ export class AstroWeatherCardEditor
               ><span>Show hourly forecast</span>
             </div> -->
           </div>
-          ${this._graph == true || this._forecast == true
-            ? html`<ha-textfield
-                label="Number of future forcasts"
-                type="number"
-                min="1"
-                max="72"
-                value=${this._number_of_forecasts}
-                .configValue="${"number_of_forecasts"}"
-                @change="${this._valueChanged}"
-              ></ha-textfield>`
+          ${this._graph || this._forecast
+            ? html`<ha-selector
+                .hass=${this.hass}
+                .selector=${{ number: { min: 1, max: 72, step: 1, mode: "box" } }}
+                .value=${Number(this._number_of_forecasts)}
+                .label=${"Number of future forecasts"}
+                @value-changed=${this._forecastCountChanged}
+              ></ha-selector>`
             : ""}
           ${this._graph == true
             ? html` <div class="switches">
@@ -435,30 +426,32 @@ export class AstroWeatherCardEditor
     `;
   }
 
-  _valueChanged(ev) {
+  _forecastCountChanged(ev: CustomEvent) {
+    this._config = { ...this._config, number_of_forecasts: ev.detail.value };
+    fireEvent(this, "config-changed", { config: this._config });
+  }
+
+  _valueChanged(ev: Event) {
     if (!this.hass || !this._config) {
       return;
     }
-    const target = ev.target;
-    if (this[`_${target.configValue}`] === target.value) {
+    const target = ev.target as any;
+    if (!target.configValue) {
       return;
     }
-    if (target.configValue) {
-      if (target.value === "") {
-        delete this._config[target.configValue];
-      }
-      if (target.value !== undefined) {
-        this._config = {
-          ...this._config,
-          [target.configValue]: target.value,
-        };
-      } else {
-        this._config = {
-          ...this._config,
-          [target.configValue]:
-            target.checked !== undefined ? target.checked : target.value,
-        };
-      }
+    if (target.checked !== undefined) {
+      this._config = {
+        ...this._config,
+        [target.configValue]: target.checked,
+      };
+    } else if (target.value === "") {
+      const { [target.configValue]: _, ...rest } = this._config;
+      this._config = rest as CardConfig;
+    } else {
+      this._config = {
+        ...this._config,
+        [target.configValue]: target.value,
+      };
     }
     fireEvent(this, "config-changed", { config: this._config });
   }

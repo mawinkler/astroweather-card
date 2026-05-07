@@ -5,11 +5,12 @@ const style = css`
         position: relative;
         aspect-ratio: 16/8;
         height: auto;
+        max-height: 200px;
         width: 100%;
         will-change: transform;
         transform: translateZ(0);       /* helps WKWebView compositing */
         backface-visibility: hidden;
-        contain: size layout paint;     /* isolate layout/paint */
+        contain: layout paint;          /* isolate layout/paint; size removed so max-height applies */
     }
     canvas {
         width: 100% !important;
@@ -19,8 +20,7 @@ const style = css`
     ha-card {
         cursor: pointer;
         overflow: hidden;
-        display: flex
-        letter-spacing: -0.288px
+        letter-spacing: -0.288px;
         font-weight: 400;
     }
 
@@ -36,7 +36,7 @@ const style = css`
         font-size: 24px;
         color: var(--primary-text-color);
         line-height: 48px;
-        align-items: center
+        align-items: center;
     }
 
     .current-location {
@@ -44,9 +44,9 @@ const style = css`
         font-size: 24px;
     }
 
-        .current-condition {
+    .current-condition {
         position: absolute;
-        // font-size: 14px;
+        /* font-size: 14px; */
         right: 16px;
     }
 
@@ -144,8 +144,8 @@ const style = css`
     }
 
     .forecast .forecastrow:nth-last-child(1) {
-    border-right: none;
-    margin  -right: 0;
+        border-right: none;
+        margin-right: 0;
     }
 
     .value_item {
@@ -184,6 +184,13 @@ const style = css`
 
     .withoutMargin {
         margin: 0;
+    }
+
+    .not-found {
+        flex: 1;
+        background-color: yellow;
+        color: black;
+        padding: 8px;
     }
 `;
 
