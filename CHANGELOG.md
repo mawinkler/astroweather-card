@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### New Features
+
+- **GFS status in `_renderDetails`** (`astroweather-card.ts`): The details panel now shows whether the GFS (Global Forecast System — NOAA's global NWP model) supplementary data was active during the last update cycle. The item uses the `mdi:satellite-uplink` icon and displays "Active" when GFS data was successfully fetched, or "Estimated" when the fetch failed and atmospheric parameters (seeing, fog density, lifted index) were derived from surface observations only. The value is read from `stateObj.attributes.gfs_supplementary_data` on the weather entity, which the integration exposes since this release.
+
 ### Bug Fixes
 
 - **CSS: `ha-card` layout regression** — Removed `display: flex` from `ha-card` that had previously been silently ignored by the browser due to a missing semicolon. After the CSS syntax fix it became active for the first time, collapsing the chart to zero width when `current: false`.

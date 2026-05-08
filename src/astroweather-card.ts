@@ -660,6 +660,10 @@ export class AstroWeatherCard extends LitElement {
           <ha-icon icon="mdi:map-clock-outline"></ha-icon>
           Local Time: ${local_time}
         </li>
+        <li>
+          <ha-icon icon="mdi:satellite-uplink"></ha-icon>
+          GFS: ${stateObj.attributes.gfs_supplementary_data ? "Active" : "Estimated"}
+        </li>
       </div>
     `;
   }
