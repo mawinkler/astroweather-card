@@ -196,14 +196,29 @@ export class AstroWeatherCard extends LitElement {
 
   public getCardSize(): number {
     const card = this.shadowRoot?.querySelector("ha-card");
-    if (!card) return 1; // fallback
+    if (card) {
+      // Pixel height of the card, converted to "rows" (~50px/row).
+      const height = card.getBoundingClientRect().height;
+      if (height) return Math.ceil(height / 50);
+    }
 
-    // Pixel height of the card
-    const height = card.getBoundingClientRect().height;
-    if (!height) return 1;
+    // ha-card hasn't rendered yet (e.g. the masonry view calls this before
+    // appending the card to a column). Only the not-found/error states are
+    // actually compact; a normal card should still get a size estimate
+    // roughly matching its enabled sections instead of always reporting 1.
+    const stateObj = this._hass?.states[this._config?.entity];
+    const isValidEntity = !!stateObj?.attributes?.attribution?.startsWith(
+      "Powered by Met.no"
+    );
+    if (!isValidEntity) return 1;
 
-    // Convert pixels → "rows" (approx. 50px per row in Lovelace grid)
-    return Math.ceil(height / 50);
+    let rows = 1;
+    if (this._config.current !== false) rows += 1;
+    if (this._config.details !== false) rows += 1;
+    if (this._config.deepskydetails !== false) rows += 1;
+    if (this._config.forecast !== false) rows += 1;
+    if (this._config.graph !== false) rows += 3;
+    return rows;
   }
 
   // Let the "sections" dashboard view size the card to its actual content
