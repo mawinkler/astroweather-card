@@ -23,7 +23,7 @@ This Integration is part of the default HACS store, so go to the HACS page and s
 
 ### Manual Installation
 
-To add the AstroWeather card to your installation, download the `astroweather-card.js` from the [release](https://raw.githubusercontent.com/jan-tdy/AstroCard-ADV/main/dist/astroweather-card.js)-page and copy it to `/config/www/custom-lovelace/astroweather-card/`.
+To add the AstroWeather card to your installation, download the `astroweather-card.js` from the [release](https://raw.githubusercontent.com/mawinkler/astroweather-card/main/dist/astroweather-card.js)-page and copy it to `/config/www/custom-lovelace/astroweather-card/`.
 
 Add the card to your dashboard by choosing `[Edit Dashboard]` and then `[Manage Resources]`.
 
@@ -155,9 +155,9 @@ To do development work on this card (either for your personal use, or to contrib
 1. Create a fork of this repository on GitHub
 2. Download and setup the repository on your local machine, by running:
 ```
-git clone https://github.com/jan-tdy/AstroCard-ADV
+git clone https://github.com/mawinkler/astroweather-card
 cd astroweather-card
-git remote add upstream https://github.com/jan-tdy/AstroCard-ADV
+git remote add upstream https://github.com/mawinkler/astroweather-card
 ```
 3. Once the repository is setup, install the npm dependencies with `npm install`
 4. Make local edits as needed to the grocy chores card. 
