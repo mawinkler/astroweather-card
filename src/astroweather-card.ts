@@ -196,13 +196,25 @@ export class AstroWeatherCard extends LitElement {
 
   public getCardSize(): number {
     const card = this.shadowRoot?.querySelector("ha-card");
-    if (!card) return 4; // fallback
+    if (!card) return 1; // fallback
 
     // Pixel height of the card
     const height = card.getBoundingClientRect().height;
+    if (!height) return 1;
 
     // Convert pixels → "rows" (approx. 50px per row in Lovelace grid)
     return Math.ceil(height / 50);
+  }
+
+  // Let the "sections" dashboard view size the card to its actual content
+  // instead of stretching it to a fixed grid row height (which made the
+  // not-found/error states look badly stretched, see GH issue #23).
+  public getGridOptions() {
+    return {
+      columns: 12,
+      rows: "auto",
+      min_rows: 1,
+    };
   }
 
   subscribeForecastEvents() {
@@ -325,17 +337,7 @@ export class AstroWeatherCard extends LitElement {
   }
 
   static get styles() {
-    return [
-      style,
-      css`
-        .not-found {
-          flex: 1;
-          background-color: yellow;
-          color: black;
-          padding: 8px;
-        }
-      `,
-    ];
+    return [style];
   }
 
   // Render card

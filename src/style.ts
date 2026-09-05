@@ -187,7 +187,6 @@ const style = css`
     }
 
     .not-found {
-        flex: 1;
         background-color: yellow;
         color: black;
         padding: 8px;
