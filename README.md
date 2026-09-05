@@ -1,3 +1,5 @@
+# This is jan-tdy's fork!
+# Work in progress!
 # Lovelace AstroWeather Card
 
 ![GitHub release](https://img.shields.io/badge/release-v0.80.0-blue)
