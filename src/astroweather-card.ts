@@ -5,7 +5,7 @@ import Chart from "chart.js/auto";
 import style from "./style";
 import "./astroweather-card-editor";
 
-const CARD_VERSION = "v0.80.0";
+const CARD_VERSION = "v0.80.1";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,

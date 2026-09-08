@@ -5,7 +5,6 @@ const style = css`
         position: relative;
         aspect-ratio: 16/8;
         height: auto;
-        max-height: 200px;
         width: 100%;
         will-change: transform;
         transform: translateZ(0);       /* helps WKWebView compositing */

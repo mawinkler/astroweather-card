@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.80.1](https://github.com/mawinkler/astroweather-card/compare/v0.80.0...v0.80.1) (2026-09-08)
+
+### Fix
+
+- A minor fix has been made to support variable-width cards in the Lovelace Sections layout.
+
 ## [0.80.0](https://github.com/mawinkler/astroweather-card/compare/v0.74.2...v0.80.0) (2026-05-29)
 
 ### New Features
