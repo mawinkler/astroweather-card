@@ -3,6 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import Chart from "chart.js/auto";
 import style from "./style";
+import { getLanguage, localize, TranslationKey } from "./localize";
 import "./astroweather-card-editor";
 
 const CARD_VERSION = "v0.82.0";
@@ -354,14 +355,16 @@ export class AstroWeatherCard extends LitElement {
       return html``;
     }
 
-    const lang = this._hass.selectedLanguage || this._hass.language;
+    const lang = getLanguage(this._hass);
     const stateObj = this._hass.states[this._config.entity];
 
     if (!stateObj) {
       return html`
         <ha-card>
           <div class="not-found">
-            Entity not available: ${this._config.entity}
+            ${this._t("error.entity_not_available", {
+              entity: this._config.entity,
+            })}
           </div>
         </ha-card>
       `;
@@ -370,7 +373,7 @@ export class AstroWeatherCard extends LitElement {
       return html`
         <ha-card>
           <div class="not-found">
-            Entity is not an AstroWeather entity: ${this._config.entity}
+            ${this._t("error.not_astroweather", { entity: this._config.entity })}
           </div>
         </ha-card>
       `;
@@ -407,7 +410,7 @@ export class AstroWeatherCard extends LitElement {
         >
 
         <span class="current-condition"
-          >${stateObj.attributes.condition_plain}</span
+          >${this._conditionPlain(stateObj.attributes.condition_plain)}</span
         >
       </div>
     `;
@@ -525,16 +528,16 @@ export class AstroWeatherCard extends LitElement {
       <div class="details">
         <li>
           <ha-icon icon="mdi:shield-sun"></ha-icon>
-          <b>ASD: ${asd_h}h ${asd_m}min</b>
+          <b>${this._t("details.asd")}: ${asd_h}h ${asd_m}min</b>
         </li>
         <li>
           <ha-icon icon="mdi:shield-moon"></ha-icon>
-          <b>DSD: ${dsd_h}h ${dsd_m}min</b>
+          <b>${this._t("details.dsd")}: ${dsd_h}h ${dsd_m}min</b>
         </li>
         <li>
           <ha-icon icon="mdi:weather-snowy-rainy"></ha-icon>
           <b
-            >Condition: ${stateObj.attributes.condition_percentage}<span
+            >${this._t("details.condition")}: ${stateObj.attributes.condition_percentage}<span
               class="unit"
             >
               %
@@ -544,7 +547,7 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:weather-night-partly-cloudy"></ha-icon>
           <b
-            >Cloudless: ${stateObj.attributes.cloudless_percentage}<span
+            >${this._t("details.cloudless")}: ${stateObj.attributes.cloudless_percentage}<span
               class="unit"
             >
               %
@@ -554,7 +557,7 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:waves"></ha-icon>
           <b
-            >Seeing: ${stateObj.attributes.seeing}<span class="unit">
+            >${this._t("details.seeing")}: ${stateObj.attributes.seeing}<span class="unit">
               asec</span
             ></b
           >
@@ -562,7 +565,7 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:safety-goggles"></ha-icon>
           <b
-            >Transp: ${stateObj.attributes.transparency}<span class="unit">
+            >${this._t("details.transparency")}: ${stateObj.attributes.transparency}<span class="unit">
               mag</span
             ></b
           >
@@ -570,25 +573,25 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
           <b
-            >Temp: ${stateObj.attributes.temperature}
+            >${this._t("details.temperature")}: ${stateObj.attributes.temperature}
             ${this._getUnit("temperature")}</b
           >
         </li>
         <li>
           <ha-icon icon="mdi:water-percent"></ha-icon>
-          <b>Humidity: ${stateObj.attributes.humidity} %</b>
+          <b>${this._t("details.humidity")}: ${stateObj.attributes.humidity} %</b>
         </li>
         <li>
           <ha-icon icon="mdi:thermometer"></ha-icon>
           <b
-            >Dewpoint: ${stateObj.attributes.dewpoint}<span class="unit">
+            >${this._t("details.dewpoint")}: ${stateObj.attributes.dewpoint}<span class="unit">
               °C</span
             ></b
           >
         </li>
         <li>
           <b
-            >Precip:
+            >${this._t("details.precipitation")}:
             ${stateObj.attributes.precipitation_amount >= 2
               ? html` <ha-icon icon="mdi:weather-pouring"></ha-icon> `
               : stateObj.attributes.precipitation_amount >= 0.2
@@ -603,7 +606,7 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:windsock"></ha-icon>
           <b
-            >Wind: ${stateObj.attributes.wind_bearing}
+            >${this._t("details.wind")}: ${stateObj.attributes.wind_bearing}
             ${this._getUnit("wind_speed") == "m/s"
               ? stateObj.attributes.wind_speed
               : Math.round(stateObj.attributes.wind_speed * 2.23694)}
@@ -613,66 +616,68 @@ export class AstroWeatherCard extends LitElement {
         <li>
           <ha-icon icon="mdi:hand-pointing-up"></ha-icon>
           <b
-            >LI: ${stateObj.attributes.lifted_index}<span class="unit">
+            >${this._t("details.lifted_index")}: ${stateObj.attributes.lifted_index}<span class="unit">
               °C</span
             ></b
           >
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-          Civil: ${sun_next_setting}
+          ${this._t("details.civil")}: ${sun_next_setting}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-          Civil: ${sun_next_rising}
+          ${this._t("details.civil")}: ${sun_next_rising}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-          Naut: ${sun_next_setting_nautical}
+          ${this._t("details.nautical")}: ${sun_next_setting_nautical}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-          Naut: ${sun_next_rising_nautical}
+          ${this._t("details.nautical")}: ${sun_next_rising_nautical}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-down"></ha-icon>
-          Astro: ${sun_next_setting_astro}
+          ${this._t("details.astronomical")}: ${sun_next_setting_astro}
         </li>
         <li>
           <ha-icon icon="mdi:weather-sunset-up"></ha-icon>
-          Astro: ${sun_next_rising_astro}
+          ${this._t("details.astronomical")}: ${sun_next_rising_astro}
         </li>
         <li>
           <ha-icon icon="mdi:arrow-down-circle-outline"></ha-icon>
-          Moon: ${moon_next_setting}
+          ${this._t("details.moon")}: ${moon_next_setting}
         </li>
         <li>
           <ha-icon icon="mdi:arrow-up-circle-outline"></ha-icon>
-          Moon: ${moon_next_rising}
+          ${this._t("details.moon")}: ${moon_next_rising}
         </li>
         <li>
           <ha-icon icon="mdi:moon-new"></ha-icon>
-          New Moon: ${moon_next_new_moon}
+          ${this._t("details.new_moon")}: ${moon_next_new_moon}
         </li>
         <li>
           <ha-icon icon="mdi:moon-full"></ha-icon>
-          Full Moon: ${moon_next_full_moon}
+          ${this._t("details.full_moon")}: ${moon_next_full_moon}
         </li>
         <li>
           <ha-icon icon="mdi:${stateObj.attributes.moon_icon}"></ha-icon>
-          Phase: ${stateObj.attributes.moon_phase} %
+          ${this._t("details.phase")}: ${stateObj.attributes.moon_phase} %
         </li>
         <li>
           <ha-icon icon="mdi:rocket-launch-outline"></ha-icon>
-          Dark Night: ${moon_next_dark_night}
+          ${this._t("details.dark_night")}: ${moon_next_dark_night}
         </li>
         <li>
           <ha-icon icon="mdi:map-clock-outline"></ha-icon>
-          Local Time: ${local_time}
+          ${this._t("details.local_time")}: ${local_time}
         </li>
         <li>
           <ha-icon icon="mdi:satellite-uplink"></ha-icon>
-          GFS: ${stateObj.attributes.gfs_supplementary_data ? "Active" : "Estimated"}
+          ${this._t("details.gfs")}: ${stateObj.attributes.gfs_supplementary_data
+            ? this._t("details.gfs_active")
+            : this._t("details.gfs_estimated")}
         </li>
       </div>
     `;
@@ -701,7 +706,7 @@ export class AstroWeatherCard extends LitElement {
                   )}
                   ${stateObj.attributes
                     .deepsky_forecast_today_precipitation_amount6 > 0
-                    ? html`, Precip:
+                    ? html`, ${this._t("deepsky.precipitation")}:
                       ${stateObj.attributes
                         .deepsky_forecast_today_precipitation_amount6}
                       ${this._getUnit("precipitation")}`
@@ -730,7 +735,7 @@ export class AstroWeatherCard extends LitElement {
                   )}
                   ${stateObj.attributes
                     .deepsky_forecast_tomorrow_precipitation_amount6 > 0
-                    ? html`, Precip:
+                    ? html`, ${this._t("deepsky.precipitation")}:
                       ${stateObj.attributes
                         .deepsky_forecast_tomorrow_precipitation_amount6}
                       ${this._getUnit("precipitation")}`
@@ -859,9 +864,7 @@ export class AstroWeatherCard extends LitElement {
   }
 
   private _drawChart(chartCanvas: HTMLCanvasElement) {
-    const lang = this._hass
-      ? (this._hass.selectedLanguage || this._hass.language)
-      : "en";
+    const lang = getLanguage(this._hass);
 
     if (!this._forecasts || !this._config || !chartCanvas) {
       return [];
@@ -1056,7 +1059,7 @@ export class AstroWeatherCard extends LitElement {
         labels: dateTime,
         datasets: [
           {
-            label: "Condition",
+            label: this._t("chart.condition"),
             type: "line",
             data: condition,
             yAxisID: "PercentageAxis",
@@ -1068,7 +1071,7 @@ export class AstroWeatherCard extends LitElement {
             pointStyle: "star",
           },
           {
-            label: "Cloudless",
+            label: this._t("chart.cloudless"),
             type: "line",
             data: clouds,
             yAxisID: "PercentageAxis",
@@ -1080,7 +1083,7 @@ export class AstroWeatherCard extends LitElement {
             pointStyle: "rect",
           },
           {
-            label: "H",
+            label: this._t("chart.clouds_high"),
             type: "line",
             data: clouds_high,
             borderDash: [9, 2],
@@ -1093,7 +1096,7 @@ export class AstroWeatherCard extends LitElement {
             pointStyle: "rect",
           },
           {
-            label: "M",
+            label: this._t("chart.clouds_medium"),
             type: "line",
             data: clouds_medium,
             borderDash: [6, 2],
@@ -1106,7 +1109,7 @@ export class AstroWeatherCard extends LitElement {
             pointStyle: "rect",
           },
           {
-            label: "L",
+            label: this._t("chart.clouds_low"),
             type: "line",
             data: clouds_low,
             borderDash: [3, 2],
@@ -1120,7 +1123,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Temperature",
+            label: this._t("chart.temperature"),
             type: "line",
             data: temperature,
             yAxisID: "TemperatureAxis",
@@ -1133,7 +1136,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Seeing",
+            label: this._t("chart.seeing"),
             type: "line",
             data: seeing,
             yAxisID: "PercentageAxis",
@@ -1146,7 +1149,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Transp",
+            label: this._t("chart.transparency"),
             type: "line",
             data: transparency,
             yAxisID: "PercentageAxis",
@@ -1159,7 +1162,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Calm",
+            label: this._t("chart.calm"),
             type: "line",
             data: calm,
             yAxisID: "PercentageAxis",
@@ -1172,7 +1175,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "LI",
+            label: this._t("chart.lifted_index"),
             type: "line",
             data: li,
             yAxisID: "LiftedIndexAxis",
@@ -1185,7 +1188,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Precip",
+            label: this._t("chart.precipitation"),
             type: "bar",
             data: precip,
             yAxisID: "PrecipitationAxis",
@@ -1195,7 +1198,7 @@ export class AstroWeatherCard extends LitElement {
           },
 
           {
-            label: "Fog",
+            label: this._t("chart.fog"),
             type: "bar",
             data: fog,
             yAxisID: "PercentageAxis",
@@ -1354,25 +1357,37 @@ export class AstroWeatherCard extends LitElement {
                   lineDash: ds.borderDash || [],
                   lineDashOffset: ds.borderDashOffset || 0,
                   hidden: !chart.isDatasetVisible(i),
+                  datasetIndex: i,
                   index: i,
                 }));
               },
+              // Match by dataset index, the label text is translated
               filter: function (legendItem) {
-                return (
-                  (legendItem.text == "Condition" && graphCondition) ||
-                  ((legendItem.text == "Cloudless" ||
-                    legendItem.text == "H" ||
-                    legendItem.text == "M" ||
-                    legendItem.text == "L") &&
-                    graphCloudless) ||
-                  (legendItem.text == "Temperature" && graphTemperature) ||
-                  (legendItem.text == "Seeing" && graphSeeing) ||
-                  (legendItem.text == "Transp" && graphTransparency) ||
-                  (legendItem.text == "Calm" && graphCalm) ||
-                  (legendItem.text == "LI" && graphLi) ||
-                  (legendItem.text == "Precip" && graphPrecip) ||
-                  (legendItem.text == "Fog" && graphFog)
-                );
+                switch (legendItem.datasetIndex) {
+                  case DATASET.CONDITION:
+                    return !!graphCondition;
+                  case DATASET.CLOUDLESS:
+                  case DATASET.CLOUDS_HIGH:
+                  case DATASET.CLOUDS_MEDIUM:
+                  case DATASET.CLOUDS_LOW:
+                    return !!graphCloudless;
+                  case DATASET.TEMPERATURE:
+                    return !!graphTemperature;
+                  case DATASET.SEEING:
+                    return !!graphSeeing;
+                  case DATASET.TRANSPARENCY:
+                    return !!graphTransparency;
+                  case DATASET.CALM:
+                    return !!graphCalm;
+                  case DATASET.LI:
+                    return !!graphLi;
+                  case DATASET.PRECIP:
+                    return !!graphPrecip;
+                  case DATASET.FOG:
+                    return !!graphFog;
+                  default:
+                    return false;
+                }
               },
             },
           },
@@ -1577,6 +1592,21 @@ export class AstroWeatherCard extends LitElement {
     }
   }
 
+  private _t(
+    key: TranslationKey,
+    params: Record<string, string | number> = {}
+  ) {
+    return localize(this._hass, key, params);
+  }
+
+  // The integration sends the condition in English ("Excellent" ... "Bad")
+  private _conditionPlain(condition: string) {
+    const key = String(condition ?? "").toLowerCase();
+    return ["excellent", "good", "fair", "poor", "bad"].includes(key)
+      ? this._t(`condition.${key}` as TranslationKey)
+      : condition;
+  }
+
   private _getUnit(measure) {
     if (this._hass) {
       const lengthUnit = this._hass.config.unit_system.length;
@@ -1606,7 +1636,7 @@ export class AstroWeatherCard extends LitElement {
     if (index < 0 || !this._hass) {
       return dayname;
     }
-    const lang = this._hass.selectedLanguage || this._hass.language;
+    const lang = getLanguage(this._hass);
     // 2023-01-01 was a Sunday, UTC avoids shifts by the browser's timezone
     const date = new Date(Date.UTC(2023, 0, 1 + index));
     try {

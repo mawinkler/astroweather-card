@@ -6,6 +6,7 @@ import {
   fireEvent,
 } from "custom-card-helpers";
 import { customElement, property, state } from "lit/decorators.js";
+import { localize } from "./localize";
 
 interface CardConfig extends LovelaceCardConfig {
   entity: string;
@@ -198,7 +199,7 @@ export class AstroWeatherCardEditor
                 .configValue="${"current"}"
                 @change="${this._valueChanged}"
               ></ha-switch
-              ><span>Show current</span>
+              ><span>${localize(this.hass, "editor.show_current")}</span>
             </div>
             <div class="switch">
               <ha-switch
@@ -206,7 +207,7 @@ export class AstroWeatherCardEditor
                 .configValue="${"details"}"
                 @change="${this._valueChanged}"
               ></ha-switch
-              ><span>Show details</span>
+              ><span>${localize(this.hass, "editor.show_details")}</span>
             </div>
             <div class="switch">
               <ha-switch
@@ -214,7 +215,7 @@ export class AstroWeatherCardEditor
                 .configValue="${"deepskydetails"}"
                 @change="${this._valueChanged}"
               ></ha-switch
-              ><span>Show deepsky details</span>
+              ><span>${localize(this.hass, "editor.show_deepsky_details")}</span>
             </div>
             <div class="switch">
               <ha-switch
@@ -222,7 +223,7 @@ export class AstroWeatherCardEditor
                 .configValue="${"forecast"}"
                 @change="${this._valueChanged}"
               ></ha-switch
-              ><span>Show forecast</span>
+              ><span>${localize(this.hass, "editor.show_forecast")}</span>
             </div>
             <div class="switch">
               <ha-switch
@@ -230,7 +231,7 @@ export class AstroWeatherCardEditor
                 .configValue="${"graph"}"
                 @change="${this._valueChanged}"
               ></ha-switch
-              ><span>Show graph</span>
+              ><span>${localize(this.hass, "editor.show_graph")}</span>
             </div>
             <!-- <div class="switch">
               <ha-switch
@@ -246,7 +247,7 @@ export class AstroWeatherCardEditor
                 .hass=${this.hass}
                 .selector=${{ number: { min: 1, max: 72, step: 1, mode: "box" } }}
                 .value=${Number(this._number_of_forecasts)}
-                .label=${"Number of future forecasts"}
+                .label=${localize(this.hass, "editor.number_of_forecasts")}
                 @value-changed=${this._forecastCountChanged}
               ></ha-selector>`
             : ""}
@@ -258,7 +259,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_condition"}"
                     @change="${this._valueChanged}"
                   ></ha-switch>
-                  <span>Graph condition</span>
+                  <span>${localize(this.hass, "editor.graph_condition")}</span>
                   <div style="margin-left: auto;">
                     <span
                       ><input
@@ -279,7 +280,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_cloudless"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph cloudless</span>
+                  ><span>${localize(this.hass, "editor.graph_cloudless")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -298,7 +299,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_temperature"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph temperature</span>
+                  ><span>${localize(this.hass, "editor.graph_temperature")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -317,7 +318,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_seeing"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph seeing</span>
+                  ><span>${localize(this.hass, "editor.graph_seeing")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -335,7 +336,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_transparency"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph transparency</span>
+                  ><span>${localize(this.hass, "editor.graph_transparency")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -353,7 +354,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_calm"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph calmness</span>
+                  ><span>${localize(this.hass, "editor.graph_calm")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -371,7 +372,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_li"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph lifted index</span>
+                  ><span>${localize(this.hass, "editor.graph_lifted_index")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -389,7 +390,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_precip"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph precipitation</span>
+                  ><span>${localize(this.hass, "editor.graph_precipitation")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
@@ -407,7 +408,7 @@ export class AstroWeatherCardEditor
                     .configValue="${"graph_fog"}"
                     @change="${this._valueChanged}"
                   ></ha-switch
-                  ><span>Graph fog density</span>
+                  ><span>${localize(this.hass, "editor.graph_fog")}</span>
                   <div style="margin-left: auto;">
                     <span>
                       <input
