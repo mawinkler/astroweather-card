@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- **Translated deep sky forecast description**: With AstroWeather 0.82.0 or later the card shows the translated state of the deep sky forecast description sensors (e.g. "Teilweise bewölkt" instead of "Partlycloudy night"). With older AstroWeather versions it keeps showing the description attribute of the weather entity ([astroweather#71](https://github.com/mawinkler/astroweather/issues/71)).
+- **Localized day names**: The day names of the deep sky forecast are shown in the user's language.
+
 ## [0.80.1](https://github.com/mawinkler/astroweather-card/compare/v0.80.0...v0.80.1) (2026-09-08)
 
 ### Fix

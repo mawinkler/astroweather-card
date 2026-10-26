@@ -63,6 +63,16 @@ const DATASET = {
   FOG: 11,
 } as const;
 
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 function rescaleY(
   chart: any,
   {
@@ -675,13 +685,20 @@ export class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
-                <b>${stateObj.attributes.deepsky_forecast_today_dayname}:</b>
+                <b
+                  >${this._localizeDayname(
+                    stateObj.attributes.deepsky_forecast_today_dayname
+                  )}:</b
+                >
                 ${stateObj.attributes.deepsky_forecast_today_plain}
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
                 <b
-                  >${stateObj.attributes.deepsky_forecast_today_desc}
+                  >${this._forecastDescription(
+                    stateObj,
+                    "deepsky_forecast_today_desc"
+                  )}
                   ${stateObj.attributes
                     .deepsky_forecast_today_precipitation_amount6 > 0
                     ? html`, Precip:
@@ -697,13 +714,20 @@ export class AstroWeatherCard extends LitElement {
           ? html`
               <li>
                 <ha-icon icon="mdi:weather-night"></ha-icon>
-                <b>${stateObj.attributes.deepsky_forecast_tomorrow_dayname}:</b>
+                <b
+                  >${this._localizeDayname(
+                    stateObj.attributes.deepsky_forecast_tomorrow_dayname
+                  )}:</b
+                >
                 ${stateObj.attributes.deepsky_forecast_tomorrow_plain}
               </li>
               <li>
                 <ha-icon icon="mdi:image-text"></ha-icon>
                 <b
-                  >${stateObj.attributes.deepsky_forecast_tomorrow_desc}
+                  >${this._forecastDescription(
+                    stateObj,
+                    "deepsky_forecast_tomorrow_desc"
+                  )}
                   ${stateObj.attributes
                     .deepsky_forecast_tomorrow_precipitation_amount6 > 0
                     ? html`, Precip:
@@ -1573,6 +1597,59 @@ export class AstroWeatherCard extends LitElement {
     } else {
       return "km";
     }
+  }
+
+  // The integration sends English day names (Python strftime("%A")).
+  // Map them to a weekday and format that in the user's language.
+  private _localizeDayname(dayname: string) {
+    const index = WEEKDAYS.indexOf(dayname);
+    if (index < 0 || !this._hass) {
+      return dayname;
+    }
+    const lang = this._hass.selectedLanguage || this._hass.language;
+    // 2023-01-01 was a Sunday, UTC avoids shifts by the browser's timezone
+    const date = new Date(Date.UTC(2023, 0, 1 + index));
+    try {
+      const weekday = new Intl.DateTimeFormat(lang, {
+        weekday: "long",
+        timeZone: "UTC",
+      }).format(date);
+      // Used as a label at the start of the line, e.g. "lundi" -> "Lundi"
+      return weekday.charAt(0).toLocaleUpperCase(lang) + weekday.slice(1);
+    } catch (e) {
+      return dayname;
+    }
+  }
+
+  // Since AstroWeather 0.82.0 the deep sky forecast description sensors have
+  // translated states. Find the sensor of the same device by its translation key
+  // and let Home Assistant format its state. Older versions fall back to the
+  // English attribute of the weather entity.
+  private _forecastDescription(stateObj, translationKey: string) {
+    const fallback = stateObj.attributes[translationKey];
+    const hass = this._hass as any;
+    if (!hass?.entities || typeof hass.formatEntityState !== "function") {
+      return fallback;
+    }
+    const deviceId = hass.entities[this._config.entity]?.device_id;
+    if (!deviceId) {
+      return fallback;
+    }
+    const sensor: any = Object.values(hass.entities).find(
+      (entry: any) =>
+        entry.platform === "astroweather" &&
+        entry.device_id === deviceId &&
+        entry.translation_key === translationKey
+    );
+    const sensorState = sensor ? hass.states[sensor.entity_id] : undefined;
+    if (
+      !sensorState ||
+      sensorState.state === "unknown" ||
+      sensorState.state === "unavailable"
+    ) {
+      return fallback;
+    }
+    return hass.formatEntityState(sensorState);
   }
 
   private _handlePopup(e, entity) {
