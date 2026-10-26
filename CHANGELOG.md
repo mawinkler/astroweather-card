@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- **Card translated**: All labels of the card and the card editor are translated into the languages of the AstroWeather integration (English, German, French, Italian, Polish, Slovak), following the Home Assistant language. Other languages fall back to English. This includes the details, the deep sky forecast, the chart legend and tooltips, the current condition ("Excellent" … "Bad"), the GFS status and error messages. Abbreviations like ASD, DSD and LI stay the same in all languages.
+
+### Fixes
+
+- **Chart legend toggling**: Clicking a legend entry now shows or hides the dataset. The legend items were missing their dataset index.
+
 ## [0.82.0](https://github.com/mawinkler/astroweather-card/compare/v0.80.1...v0.82.0) (2026-10-26)
 
 ### Improvements
