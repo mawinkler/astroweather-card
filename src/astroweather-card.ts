@@ -6,7 +6,7 @@ import style from "./style";
 import { getLanguage, localize, TranslationKey } from "./localize";
 import "./astroweather-card-editor";
 
-const CARD_VERSION = "v0.82.0";
+const CARD_VERSION = "v0.83.0";
 
 console.info(
   `%c  ASTROWEATHER-CARD  \n%c Version ${CARD_VERSION}  `,

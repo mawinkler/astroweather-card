@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.83.0](https://github.com/mawinkler/astroweather-card/compare/v0.82.0...v0.83.0) (2026-10-26)
 
 ### Improvements
 
